@@ -16,6 +16,14 @@ def hello_world():
     return 'Hello, World!'
 
 
+@app.route('/register')
+def register():
+    return render_template("register.html")
+
+@app.route('/login')
+def login():
+    return render_template("login.html")
+
 @app.route('/access')
 def access_db():
     return render_template("access.html")
