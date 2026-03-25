@@ -5,41 +5,228 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Access</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-sRIl4kxILFvY47J16cr9ZwB07vP4J8+LH7qKQnuqkuIAvNWLzeN8tE5YBujZqJLB" crossorigin="anonymous">
+    <style>
+      body {
+        min-height: 100vh;
+        background: linear-gradient(135deg, #e0ecff 0%, #f5f9ff 40%, #ffffff 100%);
+      }
+
+      .page-title {
+        font-weight: 700;
+        letter-spacing: 0.3px;
+      }
+
+      .access-card {
+        border: none;
+        border-radius: 1rem;
+        box-shadow: 0 12px 30px rgba(19, 46, 95, 0.12);
+      }
+
+      .access-card .card-header {
+        background: transparent;
+        border-bottom: none;
+        padding-bottom: 0;
+      }
+
+      .btn-brand {
+        background-color: #1f6feb;
+        color: #fff;
+        border: none;
+      }
+
+      .btn-brand:hover {
+        background-color: #1b63d3;
+        color: #fff;
+      }
+
+      .register-section {
+        margin-top: 1.5rem;
+      }
+
+      .form-switcher {
+        background-color: #f7faff;
+        border: 1px solid #dbe7ff;
+        border-radius: 0.75rem;
+        padding: 0.75rem;
+      }
+    </style>
   </head>
   <body>
-    <div class="container text-center mt-4">
-      <div class="row">
-        <div class="col">
-          <h1>Admin Login</h1>
-          <form action="/admin-login" method="POST">
-            Username: <input type="text" name="username"><br>
-            Password: <input type="password" name="password"><br>
-            <button type="submit">Login</button>
-          </form>
+    <div class="container py-5">
+      <div class="text-center mb-5">
+        <h1 class="page-title display-6">Placement Portal Access</h1>
+        <p class="text-secondary mb-0">Login or register to continue</p>
+      </div>
+
+      <div class="row g-4">
+        <div class="col-12 col-lg-4">
+          <div class="card access-card h-100">
+            <div class="card-header px-4 pt-4">
+              <h2 class="h4 mb-1">Admin Login</h2>
+              <p class="text-secondary small mb-0">For portal administrators</p>
+            </div>
+            <div class="card-body p-4">
+              <form action="/admin-login" method="POST" class="d-grid gap-3">
+                <div>
+                  <label for="admin-username" class="form-label">Username</label>
+                  <input id="admin-username" type="text" name="username" class="form-control" placeholder="Enter username" required>
+                </div>
+                <div>
+                  <label for="admin-password" class="form-label">Password</label>
+                  <input id="admin-password" type="password" name="password" class="form-control" placeholder="Enter password" required>
+                </div>
+                <button type="submit" class="btn btn-brand w-100">Login</button>
+              </form>
+            </div>
+          </div>
         </div>
 
-        <div class="col">
-          <h1>Student Login</h1>
-          <form action="/login" method="POST">
-            Email: <input type="email" name="email"><br>
-            Password: <input type="password" name="password"><br>
-            <button type="submit">Login</button>
-          </form>
+        <div class="col-12 col-lg-4">
+          <div class="card access-card h-100">
+            <div class="card-header px-4 pt-4">
+              <h2 class="h4 mb-1">Student Login</h2>
+              <p class="text-secondary small mb-0">For existing student accounts</p>
+            </div>
+            <div class="card-body p-4">
+              <form action="/login" method="POST" class="d-grid gap-3">
+                <div>
+                  <label for="student-email" class="form-label">Email</label>
+                  <input id="student-email" type="email" name="email" class="form-control" placeholder="you@example.com" required>
+                </div>
+                <div>
+                  <label for="student-password" class="form-label">Password</label>
+                  <input id="student-password" type="password" name="password" class="form-control" placeholder="Enter password" required>
+                </div>
+                <button type="submit" class="btn btn-brand w-100">Login</button>
+              </form>
+            </div>
+          </div>
         </div>
 
-        <div class="col">
-          <h1>Student Register</h1>
-          <form action="/register" method="POST">
-            Full Name: <input type="text" name="full_name"><br>
-            Email: <input type="email" name="email"><br>
-            Password: <input type="password" name="password"><br>
-            Phone: <input type="text" name="phone"><br>
-            Course: <input type="text" name="course"><br>
-            Graduation Year: <input type="number" name="graduation_year"><br>
-            <button type="submit">Register</button>
-          </form>
+        <div class="col-12 col-lg-4">
+          <div class="card access-card h-100">
+            <div class="card-header px-4 pt-4">
+              <h2 class="h4 mb-1">Company Login</h2>
+              <p class="text-secondary small mb-0">For registered company accounts</p>
+            </div>
+            <div class="card-body p-4">
+              <form action="/company-login" method="POST" class="d-grid gap-3">
+                <div>
+                  <label for="company-email" class="form-label">Email</label>
+                  <input id="company-email" type="email" name="email" class="form-control" placeholder="hr@company.com" required>
+                </div>
+                <div>
+                  <label for="company-password" class="form-label">Password</label>
+                  <input id="company-password" type="password" name="password" class="form-control" placeholder="Enter password" required>
+                </div>
+                <button type="submit" class="btn btn-brand w-100">Login</button>
+              </form>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="row register-section justify-content-center">
+        <div class="col-12 col-xl-10">
+          <div class="card access-card">
+            <div class="card-header px-4 pt-4">
+              <h2 class="h4 mb-1">Register</h2>
+              <p class="text-secondary small mb-0">Choose account type and fill relevant details</p>
+            </div>
+            <div class="card-body p-4">
+              <form action="/register" method="POST" class="d-grid gap-3" id="register-form">
+                <div class="form-switcher d-flex flex-column flex-md-row gap-3 align-items-md-center">
+                  <span class="fw-semibold">Register as:</span>
+                  <div class="form-check">
+                    <input class="form-check-input" type="radio" name="account_type" id="type-student" value="student" checked>
+                    <label class="form-check-label" for="type-student">Student</label>
+                  </div>
+                  <div class="form-check">
+                    <input class="form-check-input" type="radio" name="account_type" id="type-company" value="company">
+                    <label class="form-check-label" for="type-company">Company</label>
+                  </div>
+                </div>
+
+                <div>
+                  <label for="register-email" class="form-label">Email</label>
+                  <input id="register-email" type="email" name="email" class="form-control" placeholder="you@example.com" required>
+                </div>
+                <div>
+                  <label for="register-password" class="form-label">Password</label>
+                  <input id="register-password" type="password" name="password" class="form-control" placeholder="Create password" required>
+                </div>
+
+                <div id="student-fields" class="d-grid gap-3">
+                  <div>
+                    <label for="full-name" class="form-label">Full Name</label>
+                    <input id="full-name" type="text" name="full_name" class="form-control" placeholder="Your full name" data-student-required>
+                  </div>
+                  <div>
+                    <label for="phone" class="form-label">Phone</label>
+                    <input id="phone" type="text" name="phone" class="form-control" placeholder="10-digit phone" data-student-required>
+                  </div>
+                  <div>
+                    <label for="course" class="form-label">Course</label>
+                    <input id="course" type="text" name="course" class="form-control" placeholder="e.g. BSc Data Science" data-student-required>
+                  </div>
+                  <div>
+                    <label for="graduation-year" class="form-label">Graduation Year</label>
+                    <input id="graduation-year" type="number" name="graduation_year" class="form-control" placeholder="2028" min="2000" max="2100" data-student-required>
+                  </div>
+                </div>
+
+                <div id="company-fields" class="d-grid gap-3 d-none">
+                  <div>
+                    <label for="company-name" class="form-label">Company Name</label>
+                    <input id="company-name" type="text" name="company_name" class="form-control" placeholder="Company Pvt Ltd" data-company-required>
+                  </div>
+                  <div>
+                    <label for="industry" class="form-label">Industry</label>
+                    <input id="industry" type="text" name="industry" class="form-control" placeholder="e.g. FinTech" data-company-required>
+                  </div>
+                  <div>
+                    <label for="location" class="form-label">Location</label>
+                    <input id="location" type="text" name="location" class="form-control" placeholder="City, Country" data-company-required>
+                  </div>
+                  <div>
+                    <label for="website" class="form-label">Website (optional)</label>
+                    <input id="website" type="url" name="website" class="form-control" placeholder="https://example.com">
+                  </div>
+                </div>
+                <button type="submit" class="btn btn-brand w-100">Register</button>
+              </form>
+            </div>
+          </div>
         </div>
       </div>
     </div>
+
+    <script>
+      const studentType = document.getElementById('type-student');
+      const companyType = document.getElementById('type-company');
+      const studentFields = document.getElementById('student-fields');
+      const companyFields = document.getElementById('company-fields');
+
+      function setFieldRequirements() {
+        const isCompany = companyType.checked;
+
+        studentFields.classList.toggle('d-none', isCompany);
+        companyFields.classList.toggle('d-none', !isCompany);
+
+        document.querySelectorAll('[data-student-required]').forEach((input) => {
+          input.required = !isCompany;
+          if (isCompany) input.value = '';
+        });
+
+        document.querySelectorAll('[data-company-required]').forEach((input) => {
+          input.required = isCompany;
+          if (!isCompany) input.value = '';
+        });
+      }
+
+      studentType.addEventListener('change', setFieldRequirements);
+      companyType.addEventListener('change', setFieldRequirements);
+      setFieldRequirements();
+    </script>
   </body>
 </html>
