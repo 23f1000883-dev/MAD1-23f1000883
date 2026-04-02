@@ -18,17 +18,15 @@ ALLOWED_RESUME_EXTENSIONS = {"pdf", "doc", "docx"}
 os.makedirs(RESUME_UPLOAD_FOLDER, exist_ok=True)
 
 
-def save_resume_upload(uploaded_file) -> str:
+def save_resume_upload(uploaded_file):
     if not uploaded_file or not uploaded_file.filename:
         return ""
 
     filename = secure_filename(uploaded_file.filename)
-    if "." not in filename:
-        raise ValueError("Resume file must have an extension.")
-
-    extension = filename.rsplit(".", 1)[1].lower()
+    extension = filename.rsplit(".", 1)[1].lower() if "." in filename else ""
+    
     if extension not in ALLOWED_RESUME_EXTENSIONS:
-        raise ValueError("Resume must be a PDF, DOC, or DOCX file.")
+        return ""
 
     stored_name = f"resume_{uuid4().hex}.{extension}"
     uploaded_file.save(os.path.join(RESUME_UPLOAD_FOLDER, stored_name))
@@ -45,228 +43,147 @@ def favicon():
     return Response(status=204)
 
 
-def ensure_student_password_column() -> None:
-    """Backfill students.password for older SQLite schemas."""
+def ensure_student_password_column():
     columns = db.session.execute(text("PRAGMA table_info(students)")).mappings().all()
     column_names = {column["name"] for column in columns}
-
     if columns and "password" not in column_names:
         try:
-            db.session.execute(
-                text("ALTER TABLE students ADD COLUMN password VARCHAR(120) DEFAULT ''")
-            )
+            db.session.execute(text("ALTER TABLE students ADD COLUMN password VARCHAR(120) DEFAULT ''"))
             db.session.commit()
-        except OperationalError as error:
+        except OperationalError:
             db.session.rollback()
-            if "duplicate column name" not in str(error).lower():
-                raise
 
 
-def ensure_company_auth_columns() -> None:
-    """Backfill companies.email and companies.password for older SQLite schemas."""
+def ensure_company_auth_columns():
     columns = db.session.execute(text("PRAGMA table_info(companies)")).mappings().all()
     column_names = {column["name"] for column in columns}
-
     if columns and "email" not in column_names:
         try:
-            db.session.execute(
-                text("ALTER TABLE companies ADD COLUMN email VARCHAR(120) DEFAULT ''")
-            )
+            db.session.execute(text("ALTER TABLE companies ADD COLUMN email VARCHAR(120) DEFAULT ''"))
             db.session.commit()
-        except OperationalError as error:
+        except OperationalError:
             db.session.rollback()
-            if "duplicate column name" not in str(error).lower():
-                raise
-
     if columns and "password" not in column_names:
         try:
-            db.session.execute(
-                text("ALTER TABLE companies ADD COLUMN password VARCHAR(120) DEFAULT ''")
-            )
+            db.session.execute(text("ALTER TABLE companies ADD COLUMN password VARCHAR(120) DEFAULT ''"))
             db.session.commit()
-        except OperationalError as error:
+        except OperationalError:
             db.session.rollback()
-            if "duplicate column name" not in str(error).lower():
-                raise
 
 
-def ensure_company_blacklist_column() -> None:
-    """Backfill companies.is_blacklisted for older SQLite schemas."""
+def ensure_company_blacklist_column():
     columns = db.session.execute(text("PRAGMA table_info(companies)")).mappings().all()
     column_names = {column["name"] for column in columns}
-
     if columns and "is_blacklisted" not in column_names:
         try:
-            db.session.execute(
-                text("ALTER TABLE companies ADD COLUMN is_blacklisted BOOLEAN DEFAULT 0")
-            )
+            db.session.execute(text("ALTER TABLE companies ADD COLUMN is_blacklisted BOOLEAN DEFAULT 0"))
             db.session.commit()
-        except OperationalError as error:
+        except OperationalError:
             db.session.rollback()
-            if "duplicate column name" not in str(error).lower():
-                raise
 
 
-def ensure_company_approval_column() -> None:
-    """Backfill companies.is_approved for older SQLite schemas."""
+def ensure_company_approval_column():
     columns = db.session.execute(text("PRAGMA table_info(companies)")).mappings().all()
     column_names = {column["name"] for column in columns}
-
     if columns and "is_approved" not in column_names:
         try:
-            db.session.execute(
-                text("ALTER TABLE companies ADD COLUMN is_approved BOOLEAN DEFAULT 0")
-            )
+            db.session.execute(text("ALTER TABLE companies ADD COLUMN is_approved BOOLEAN DEFAULT 0"))
             db.session.commit()
-        except OperationalError as error:
+        except OperationalError:
             db.session.rollback()
-            if "duplicate column name" not in str(error).lower():
-                raise
 
 
-def ensure_student_profile_columns() -> None:
-    """Backfill students.resume_url for older SQLite schemas."""
+def ensure_student_profile_columns():
     columns = db.session.execute(text("PRAGMA table_info(students)")).mappings().all()
     column_names = {column["name"] for column in columns}
-
     if columns and "resume_url" not in column_names:
         try:
-            db.session.execute(
-                text("ALTER TABLE students ADD COLUMN resume_url VARCHAR(255) DEFAULT ''")
-            )
+            db.session.execute(text("ALTER TABLE students ADD COLUMN resume_url VARCHAR(255) DEFAULT ''"))
             db.session.commit()
-        except OperationalError as error:
+        except OperationalError:
             db.session.rollback()
-            if "duplicate column name" not in str(error).lower():
-                raise
-
     if columns and "skills" not in column_names:
         try:
-            db.session.execute(
-                text("ALTER TABLE students ADD COLUMN skills VARCHAR(255) DEFAULT ''")
-            )
+            db.session.execute(text("ALTER TABLE students ADD COLUMN skills VARCHAR(255) DEFAULT ''"))
             db.session.commit()
-        except OperationalError as error:
+        except OperationalError:
             db.session.rollback()
-            if "duplicate column name" not in str(error).lower():
-                raise
 
 
-def ensure_student_deactivation_column() -> None:
-    """Backfill students.is_deactivated for admin deactivate feature."""
+def ensure_student_deactivation_column():
     columns = db.session.execute(text("PRAGMA table_info(students)")).mappings().all()
     column_names = {column["name"] for column in columns}
-
     if columns and "is_deactivated" not in column_names:
         try:
-            db.session.execute(
-                text("ALTER TABLE students ADD COLUMN is_deactivated BOOLEAN DEFAULT 0")
-            )
+            db.session.execute(text("ALTER TABLE students ADD COLUMN is_deactivated BOOLEAN DEFAULT 0"))
             db.session.commit()
-        except OperationalError as error:
+        except OperationalError:
             db.session.rollback()
-            if "duplicate column name" not in str(error).lower():
-                raise
 
 
 
-def remove_student_is_active_column() -> None:
-    """Remove legacy students.is_active column from SQLite schema if it exists."""
+def remove_student_is_active_column():
     columns = db.session.execute(text("PRAGMA table_info(students)")).mappings().all()
     column_names = {column["name"] for column in columns}
-
     if columns and "is_active" in column_names:
         try:
             db.session.execute(text("ALTER TABLE students DROP COLUMN is_active"))
             db.session.commit()
-        except OperationalError as error:
+        except OperationalError:
             db.session.rollback()
-            print(f"Could not drop students.is_active column automatically: {error}")
 
 
-def ensure_jobposition_columns() -> None:
-    """Backfill new job_positions columns for status-based drive flow."""
+def ensure_jobposition_columns():
     columns = db.session.execute(text("PRAGMA table_info(job_positions)")).mappings().all()
     column_names = {column["name"] for column in columns}
-
+    
     if columns and "eligibility_criteria" not in column_names:
         try:
-            db.session.execute(
-                text("ALTER TABLE job_positions ADD COLUMN eligibility_criteria VARCHAR(255) DEFAULT ''")
-            )
+            db.session.execute(text("ALTER TABLE job_positions ADD COLUMN eligibility_criteria VARCHAR(255) DEFAULT ''"))
             db.session.commit()
-        except OperationalError as error:
+        except OperationalError:
             db.session.rollback()
-            if "duplicate column name" not in str(error).lower():
-                raise
-
     if columns and "application_deadline" not in column_names:
         try:
-            db.session.execute(
-                text("ALTER TABLE job_positions ADD COLUMN application_deadline DATE")
-            )
+            db.session.execute(text("ALTER TABLE job_positions ADD COLUMN application_deadline DATE"))
             db.session.commit()
-        except OperationalError as error:
+        except OperationalError:
             db.session.rollback()
-            if "duplicate column name" not in str(error).lower():
-                raise
-
     if columns and "status" not in column_names:
         try:
-            db.session.execute(
-                text("ALTER TABLE job_positions ADD COLUMN status VARCHAR(30) DEFAULT 'pending'")
-            )
+            db.session.execute(text("ALTER TABLE job_positions ADD COLUMN status VARCHAR(30) DEFAULT 'pending'"))
             db.session.commit()
-        except OperationalError as error:
+        except OperationalError:
             db.session.rollback()
-            if "duplicate column name" not in str(error).lower():
-                raise
-
     if columns and "required_skills" not in column_names:
         try:
-            db.session.execute(
-                text("ALTER TABLE job_positions ADD COLUMN required_skills VARCHAR(255) DEFAULT ''")
-            )
+            db.session.execute(text("ALTER TABLE job_positions ADD COLUMN required_skills VARCHAR(255) DEFAULT ''"))
             db.session.commit()
-        except OperationalError as error:
+        except OperationalError:
             db.session.rollback()
-            if "duplicate column name" not in str(error).lower():
-                raise
-
     if columns and "experience_required" not in column_names:
         try:
-            db.session.execute(
-                text("ALTER TABLE job_positions ADD COLUMN experience_required VARCHAR(120) DEFAULT ''")
-            )
+            db.session.execute(text("ALTER TABLE job_positions ADD COLUMN experience_required VARCHAR(120) DEFAULT ''"))
             db.session.commit()
-        except OperationalError as error:
+        except OperationalError:
             db.session.rollback()
-            if "duplicate column name" not in str(error).lower():
-                raise
 
 
-def close_expired_job_positions() -> None:
-    """Automatically close active job positions once deadline has passed."""
+def close_expired_job_positions():
     today = datetime.utcnow().date()
-
     expired_positions = JobPosition.query.filter(
         JobPosition.is_active == True,
         JobPosition.application_deadline.isnot(None),
         JobPosition.application_deadline < today,
     ).all()
-
-    if not expired_positions:
-        return
-
     for position in expired_positions:
         position.is_active = False
         position.status = "closed"
+    if expired_positions:
+        db.session.commit()
 
-    db.session.commit()
 
-
-def ensure_default_admin() -> None:
-    """Create pre-existing admin user if missing."""
+def ensure_default_admin():
     existing_admin = Admin.query.filter_by(username="admin").first()
     if not existing_admin:
         admin = Admin()
@@ -280,20 +197,19 @@ def ensure_default_admin() -> None:
 
 
 
-# DATABASE Connection
-db.init_app(app)  # Flask -----------> SQLAlchemy
+db.init_app(app)
 with app.app_context():
-    db.create_all()  # create missing tables
-    ensure_student_password_column()  # fix older students table schema
-    ensure_student_profile_columns()  # add resume for students
-    ensure_student_deactivation_column()  # add student deactivate flag
-    remove_student_is_active_column()  # remove legacy student activation column
-    ensure_company_auth_columns()  # fix older companies table schema
-    ensure_company_blacklist_column()  # fix older companies blacklist schema
-    ensure_company_approval_column()  # add company approval flag
-    ensure_jobposition_columns()  # add job status and metadata fields
-    close_expired_job_positions()  # auto-close jobs with expired deadlines
-    ensure_default_admin()  # keep pre-existing admin ready
+    db.create_all()
+    ensure_student_password_column()
+    ensure_student_profile_columns()
+    ensure_student_deactivation_column()
+    remove_student_is_active_column()
+    ensure_company_auth_columns()
+    ensure_company_blacklist_column()
+    ensure_company_approval_column()
+    ensure_jobposition_columns()
+    close_expired_job_positions()
+    ensure_default_admin()
 
 @app.route('/home')
 def hello_world():
@@ -1006,11 +922,7 @@ def student_dashboard():
         return redirect(url_for("access"))
 
     search = (request.args.get("search") or "").strip().lower()
-    
-    # Get all applications for the student
     applications = Application.query.filter_by(student_id=student.id).all()
-    
-    # Get all active job positions (drives) from non-blacklisted companies
     active_positions = JobPosition.query.join(Company).filter(
         JobPosition.is_active == True,
         JobPosition.status == "approved",
@@ -1028,11 +940,7 @@ def student_dashboard():
             or search in (position.required_skills or "").lower()
             or search in (position.experience_required or "").lower()
         ]
-    
-    # Get applied job position IDs
     applied_position_ids = [app.job_position_id for app in applications]
-    
-    # Get all placements for the student
     placements = Placement.query.join(Application).filter(
         Application.student_id == student.id
     ).all()
@@ -1122,7 +1030,6 @@ def student_job_details(position_id):
 
 @app.route('/student-preview')
 def student_preview():
-    """Public preview of student dashboard in a new tab from access page."""
     student = Student.query.order_by(Student.id.asc()).first()
 
     return render_template(
@@ -1260,14 +1167,9 @@ def delete_student_account():
         return redirect(url_for("access"))
     
     try:
-        # Delete all applications first (cascade will delete placements)
         Application.query.filter_by(student_id=student_id).delete()
-        
-        # Then delete the student
         db.session.delete(student)
         db.session.commit()
-        
-        # Clear the session
         session.clear()
         
         print(f"Student account deleted: {student.email}")
@@ -1287,8 +1189,6 @@ def withdraw_application(application_id):
         return redirect(url_for("access"))
     
     student_id = session['student_id']
-    
-    # Find application that belongs to this student
     application = Application.query.filter_by(
         id=application_id,
         student_id=student_id
@@ -1299,7 +1199,6 @@ def withdraw_application(application_id):
         return redirect(url_for("view_applications"))
     
     try:
-        # Delete the application
         db.session.delete(application)
         db.session.commit()
         
@@ -1389,14 +1288,10 @@ def admin_create_placement():
             offered_package_lpa = None
     
     try:
-        # Update application status to selected
         application.status = "placed"
-        
-        # Create placement
         placement = Placement()
         placement.application_id = application_id
         placement.offered_package_lpa = offered_package_lpa
-        
         db.session.add(placement)
         db.session.commit()
         
