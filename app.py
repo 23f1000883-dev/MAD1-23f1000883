@@ -7,11 +7,9 @@ from datetime import datetime
 import os
 
 app = Flask(__name__, template_folder="template")
-app.config["SQLALCHEMY_DATABASE_URI"] = os.environ.get(
-    "DATABASE_URL", "sqlite:///placement_portal.db"
-)
+app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///placement_portal.db"
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
-app.config["SECRET_KEY"] = os.environ.get("SECRET_KEY", "Project")
+app.secret_key = "Project"  
 
 
 @app.route('/')
