@@ -25,6 +25,8 @@
                         <p class="mb-2"><strong>Company:</strong> {{ position.company.name }}</p>
                         <p class="mb-2"><strong>Description:</strong> {{ position.description or 'No description provided.' }}</p>
                         <p class="mb-2"><strong>Eligibility:</strong> {{ position.eligibility_criteria or 'N/A' }}</p>
+                        <p class="mb-2"><strong>Required Skills:</strong> {{ position.required_skills or 'N/A' }}</p>
+                        <p class="mb-2"><strong>Experience Required:</strong> {{ position.experience_required or 'N/A' }}</p>
                         <p class="mb-2"><strong>Deadline:</strong> {{ position.application_deadline.strftime('%Y-%m-%d') if position.application_deadline else 'N/A' }}</p>
                         <p class="mb-2"><strong>Drive Status:</strong> {{ position.status }}</p>
                         <p class="mb-2"><strong>Location:</strong> {{ position.location or 'N/A' }}</p>

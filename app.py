@@ -1,15 +1,38 @@
 from flask import Flask, Response, flash, redirect, render_template, request, url_for, session
 from model import db , Admin, Student, Company, JobPosition, Application, Placement
 from werkzeug.security import check_password_hash as cph, generate_password_hash as gph
+from werkzeug.utils import secure_filename
 from sqlalchemy import text
 from sqlalchemy.exc import OperationalError
 from datetime import datetime
 import os
+from uuid import uuid4
 
 app = Flask(__name__, template_folder="template")
 app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///placement_portal.db"
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 app.secret_key = "Project"  
+
+RESUME_UPLOAD_FOLDER = os.path.join(app.root_path, "static", "uploads", "resumes")
+ALLOWED_RESUME_EXTENSIONS = {"pdf", "doc", "docx"}
+os.makedirs(RESUME_UPLOAD_FOLDER, exist_ok=True)
+
+
+def save_resume_upload(uploaded_file) -> str:
+    if not uploaded_file or not uploaded_file.filename:
+        return ""
+
+    filename = secure_filename(uploaded_file.filename)
+    if "." not in filename:
+        raise ValueError("Resume file must have an extension.")
+
+    extension = filename.rsplit(".", 1)[1].lower()
+    if extension not in ALLOWED_RESUME_EXTENSIONS:
+        raise ValueError("Resume must be a PDF, DOC, or DOCX file.")
+
+    stored_name = f"resume_{uuid4().hex}.{extension}"
+    uploaded_file.save(os.path.join(RESUME_UPLOAD_FOLDER, stored_name))
+    return f"/static/uploads/resumes/{stored_name}"
 
 
 @app.route('/')
@@ -117,6 +140,17 @@ def ensure_student_profile_columns() -> None:
             if "duplicate column name" not in str(error).lower():
                 raise
 
+    if columns and "skills" not in column_names:
+        try:
+            db.session.execute(
+                text("ALTER TABLE students ADD COLUMN skills VARCHAR(255) DEFAULT ''")
+            )
+            db.session.commit()
+        except OperationalError as error:
+            db.session.rollback()
+            if "duplicate column name" not in str(error).lower():
+                raise
+
 
 def ensure_student_deactivation_column() -> None:
     """Backfill students.is_deactivated for admin deactivate feature."""
@@ -181,6 +215,28 @@ def ensure_jobposition_columns() -> None:
         try:
             db.session.execute(
                 text("ALTER TABLE job_positions ADD COLUMN status VARCHAR(30) DEFAULT 'pending'")
+            )
+            db.session.commit()
+        except OperationalError as error:
+            db.session.rollback()
+            if "duplicate column name" not in str(error).lower():
+                raise
+
+    if columns and "required_skills" not in column_names:
+        try:
+            db.session.execute(
+                text("ALTER TABLE job_positions ADD COLUMN required_skills VARCHAR(255) DEFAULT ''")
+            )
+            db.session.commit()
+        except OperationalError as error:
+            db.session.rollback()
+            if "duplicate column name" not in str(error).lower():
+                raise
+
+    if columns and "experience_required" not in column_names:
+        try:
+            db.session.execute(
+                text("ALTER TABLE job_positions ADD COLUMN experience_required VARCHAR(120) DEFAULT ''")
             )
             db.session.commit()
         except OperationalError as error:
@@ -369,12 +425,14 @@ def admin_edit_student(student_id):
     full_name = request.form.get("full_name") or student.full_name
     phone = request.form.get("phone") or ""
     course = request.form.get("course") or ""
+    skills = request.form.get("skills") or ""
     graduation_year_raw = request.form.get("graduation_year") or "0"
     graduation_year = int(graduation_year_raw) if graduation_year_raw.isdigit() else student.graduation_year
 
     student.full_name = full_name
     student.phone = phone
     student.course = course
+    student.skills = skills
     student.graduation_year = graduation_year
     db.session.commit()
     flash("Student details updated.", "success")
@@ -679,6 +737,8 @@ def company_create_job():
     title = request.form.get("title") or ""
     description = request.form.get("description") or ""
     eligibility_criteria = request.form.get("eligibility_criteria") or ""
+    required_skills = request.form.get("required_skills") or ""
+    experience_required = request.form.get("experience_required") or ""
     deadline_raw = request.form.get("application_deadline") or ""
     location = request.form.get("location") or ""
     salary_raw = request.form.get("salary_lpa") or ""
@@ -706,6 +766,8 @@ def company_create_job():
     position.title = title
     position.description = description
     position.eligibility_criteria = eligibility_criteria
+    position.required_skills = required_skills
+    position.experience_required = experience_required
     position.application_deadline = application_deadline
     position.location = location
     position.salary_lpa = salary_lpa
@@ -735,6 +797,8 @@ def company_edit_job(position_id):
     title = request.form.get("title") or ""
     description = request.form.get("description") or ""
     eligibility_criteria = request.form.get("eligibility_criteria") or ""
+    required_skills = request.form.get("required_skills") or ""
+    experience_required = request.form.get("experience_required") or ""
     deadline_raw = request.form.get("application_deadline") or ""
     location = request.form.get("location") or ""
     salary_raw = request.form.get("salary_lpa") or ""
@@ -761,6 +825,8 @@ def company_edit_job(position_id):
     position.title = title
     position.description = description
     position.eligibility_criteria = eligibility_criteria
+    position.required_skills = required_skills
+    position.experience_required = experience_required
     position.application_deadline = application_deadline
     position.location = location
     position.salary_lpa = salary_lpa
@@ -807,7 +873,7 @@ def update_application_status(application_id):
     if 'company_id' not in session:
         return redirect(url_for("access"))
 
-    allowed_statuses = {"applied", "shortlisted", "selected", "rejected"}
+    allowed_statuses = {"applied", "shortlisted", "interview", "selected", "placed", "rejected"}
     new_status = (request.form.get("status") or "").lower()
     if new_status not in allowed_statuses:
         flash("Invalid application status.", "warning")
@@ -843,8 +909,11 @@ def register():
         full_name = request.form.get("full_name") or ""
         phone = request.form.get("phone") or ""
         course = request.form.get("course") or ""
+        skills = request.form.get("skills") or ""
         graduation_year_raw = request.form.get("graduation_year") or "0"
         graduation_year = int(graduation_year_raw) if graduation_year_raw.isdigit() else 0
+        resume_url = request.form.get("resume_url") or ""
+        resume_file = request.files.get("resume")
 
         if not full_name or not phone or not course or graduation_year == 0:
             flash("Please fill all student fields.", "warning")
@@ -864,7 +933,16 @@ def register():
         student.password = hash_password
         student.phone = phone
         student.course = course
+        student.skills = skills
         student.graduation_year = graduation_year
+        if resume_file and resume_file.filename:
+            try:
+                student.resume_url = save_resume_upload(resume_file)
+            except ValueError as error:
+                flash(str(error), "warning")
+                return redirect(url_for("register_page"))
+        else:
+            student.resume_url = resume_url
         db.session.add(student)
         db.session.commit()
         flash("Student registration successful. Please login.", "success")
@@ -926,6 +1004,8 @@ def student_dashboard():
     student = Student.query.get(session['student_id'])
     if not student:
         return redirect(url_for("access"))
+
+    search = (request.args.get("search") or "").strip().lower()
     
     # Get all applications for the student
     applications = Application.query.filter_by(student_id=student.id).all()
@@ -937,6 +1017,17 @@ def student_dashboard():
         Company.is_blacklisted == False,
         Company.is_approved == True
     ).all()
+
+    if search:
+        active_positions = [
+            position for position in active_positions
+            if search in (position.company.name or "").lower()
+            or search in (position.title or "").lower()
+            or search in (position.description or "").lower()
+            or search in (position.eligibility_criteria or "").lower()
+            or search in (position.required_skills or "").lower()
+            or search in (position.experience_required or "").lower()
+        ]
     
     # Get applied job position IDs
     applied_position_ids = [app.job_position_id for app in applications]
@@ -951,7 +1042,8 @@ def student_dashboard():
                          applications=applications,
                          active_positions=active_positions,
                          applied_position_ids=applied_position_ids,
-                         placements=placements)
+                         placements=placements,
+                         search=search)
 
 
 @app.route('/student/company-details')
@@ -1122,13 +1214,23 @@ def edit_profile():
     if request.method == 'POST':
         phone = request.form.get("phone") or ""
         course = request.form.get("course") or ""
+        skills = request.form.get("skills") or ""
         resume_url = request.form.get("resume_url") or ""
+        resume_file = request.files.get("resume")
         graduation_year_raw = request.form.get("graduation_year") or "0"
         graduation_year = int(graduation_year_raw) if graduation_year_raw.isdigit() else 0
         
         student.phone = phone
         student.course = course
-        student.resume_url = resume_url
+        student.skills = skills
+        if resume_file and resume_file.filename:
+            try:
+                student.resume_url = save_resume_upload(resume_file)
+            except ValueError as error:
+                flash(str(error), "warning")
+                return redirect(url_for("edit_profile"))
+        elif resume_url:
+            student.resume_url = resume_url
         student.graduation_year = graduation_year
         
         try:
@@ -1288,7 +1390,7 @@ def admin_create_placement():
     
     try:
         # Update application status to selected
-        application.status = "selected"
+        application.status = "placed"
         
         # Create placement
         placement = Placement()

@@ -19,7 +19,7 @@
         <div class="card shadow-sm">
             <div class="card-body">
                 <h1 class="h4 mb-3">Edit Profile</h1>
-                <form method="POST" class="row g-3">
+                <form method="POST" class="row g-3" enctype="multipart/form-data">
                     <div class="col-md-6">
                         <label class="form-label">Full Name</label>
                         <input class="form-control" value="{{ student.full_name }}" readonly>
@@ -37,12 +37,20 @@
                         <input id="course" name="course" class="form-control" value="{{ student.course or '' }}" required>
                     </div>
                     <div class="col-md-6">
+                        <label class="form-label" for="skills">Skills</label>
+                        <input id="skills" name="skills" class="form-control" value="{{ student.skills or '' }}" placeholder="Python, SQL, Excel">
+                    </div>
+                    <div class="col-md-6">
                         <label class="form-label" for="graduation_year">Graduation Year</label>
                         <input id="graduation_year" type="number" name="graduation_year" class="form-control" value="{{ student.graduation_year or '' }}" min="2000" max="2099" required>
                     </div>
                     <div class="col-md-6">
                         <label class="form-label" for="resume_url">Resume URL</label>
-                        <input id="resume_url" name="resume_url" class="form-control" value="{{ student.resume_url or '' }}" placeholder="https://drive.google.com/...">
+                        <input id="resume_url" name="resume_url" class="form-control" value="{{ student.resume_url or '' }}" placeholder="https://drive.google.com/... or uploaded file path">
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label" for="resume">Upload New Resume</label>
+                        <input id="resume" type="file" name="resume" class="form-control" accept=".pdf,.doc,.docx">
                     </div>
                     <div class="col-12 d-flex gap-2">
                         <button type="submit" class="btn btn-primary">Save Changes</button>

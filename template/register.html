@@ -25,14 +25,20 @@
           <div class="card shadow-sm h-100">
             <div class="card-body">
               <h2 class="h5">Student Registration</h2>
-              <form method="POST" action="{{ url_for('register') }}">
+              <form method="POST" action="{{ url_for('register') }}" enctype="multipart/form-data">
                 <input type="hidden" name="account_type" value="student">
                 <div class="mb-2"><input class="form-control" name="full_name" placeholder="Full Name" required></div>
                 <div class="mb-2"><input class="form-control" type="email" name="email" placeholder="Email" required></div>
                 <div class="mb-2"><input class="form-control" type="password" name="password" placeholder="Password" required></div>
                 <div class="mb-2"><input class="form-control" name="phone" placeholder="Phone" required></div>
                 <div class="mb-2"><input class="form-control" name="course" placeholder="Course" required></div>
+                <div class="mb-2"><input class="form-control" name="skills" placeholder="Skills, separated by commas"></div>
                 <div class="mb-2"><input class="form-control" type="number" name="graduation_year" placeholder="Graduation Year" required></div>
+                <div class="mb-2">
+                  <label class="form-label">Upload Resume</label>
+                  <input class="form-control" type="file" name="resume" accept=".pdf,.doc,.docx">
+                  <div class="form-text">PDF, DOC, or DOCX only.</div>
+                </div>
                 <button class="btn btn-success btn-sm" type="submit">Register Student</button>
               </form>
             </div>

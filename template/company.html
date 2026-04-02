@@ -85,6 +85,8 @@
                             <th>Status</th>
                             <th>Location</th>
                             <th>Salary (LPA)</th>
+                            <th>Skills</th>
+                            <th>Experience</th>
                             <th>Applicants</th>
                             <th>Active</th>
                             <th>Posted At</th>
@@ -99,6 +101,8 @@
                             <td>{{ position.status }}</td>
                             <td>{{ position.location or 'N/A' }}</td>
                             <td>{{ position.salary_lpa or 'N/A' }}</td>
+                            <td>{{ position.required_skills or 'N/A' }}</td>
+                            <td>{{ position.experience_required or 'N/A' }}</td>
                             <td>{{ applicant_counts.get(position.id, 0) }}</td>
                             <td>{{ 'Yes' if position.is_active else 'No' }}</td>
                             <td>{{ position.posted_at.strftime('%Y-%m-%d %H:%M') if position.posted_at else 'N/A' }}</td>
@@ -108,6 +112,8 @@
                                     <div class="col-12"><input class="form-control form-control-sm" name="location" value="{{ position.location or '' }}" placeholder="Location"></div>
                                     <div class="col-12"><input class="form-control form-control-sm" name="salary_lpa" value="{{ position.salary_lpa or '' }}" placeholder="Salary"></div>
                                     <div class="col-12"><input class="form-control form-control-sm" name="eligibility_criteria" value="{{ position.eligibility_criteria or '' }}" placeholder="Eligibility Criteria"></div>
+                                    <div class="col-12"><input class="form-control form-control-sm" name="required_skills" value="{{ position.required_skills or '' }}" placeholder="Required Skills"></div>
+                                    <div class="col-12"><input class="form-control form-control-sm" name="experience_required" value="{{ position.experience_required or '' }}" placeholder="Experience Required"></div>
                                     <div class="col-12"><input class="form-control form-control-sm" type="date" name="application_deadline" value="{{ position.application_deadline.strftime('%Y-%m-%d') if position.application_deadline else '' }}"></div>
                                     <div class="col-12"><textarea class="form-control form-control-sm" name="description" rows="2" placeholder="Description">{{ position.description or '' }}</textarea></div>
                                     <div class="col-12 form-check ms-1">
@@ -128,7 +134,7 @@
                             </td>
                         </tr>
                         {% else %}
-                        <tr><td colspan="9" class="text-center">No job positions found</td></tr>
+                        <tr><td colspan="11" class="text-center">No job positions found</td></tr>
                         {% endfor %}
                     </tbody>
                 </table>
@@ -152,6 +158,14 @@
                         <div class="col-md-6">
                             <label class="form-label">Salary (LPA)</label>
                             <input class="form-control" name="salary_lpa" placeholder="e.g. 6.5">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Required Skills</label>
+                            <input class="form-control" name="required_skills" placeholder="e.g. Python, SQL, Flask">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Experience Required</label>
+                            <input class="form-control" name="experience_required" placeholder="e.g. 0-2 years">
                         </div>
                         <div class="col-12">
                             <label class="form-label">Job Description</label>
@@ -205,7 +219,9 @@
                                     <select class="form-select form-select-sm" name="status">
                                         <option value="applied" {% if application.status == 'applied' %}selected{% endif %}>Applied</option>
                                         <option value="shortlisted" {% if application.status == 'shortlisted' %}selected{% endif %}>Shortlisted</option>
+                                        <option value="interview" {% if application.status == 'interview' %}selected{% endif %}>Interview</option>
                                         <option value="selected" {% if application.status == 'selected' %}selected{% endif %}>Selected</option>
+                                        <option value="placed" {% if application.status == 'placed' %}selected{% endif %}>Placed</option>
                                         <option value="rejected" {% if application.status == 'rejected' %}selected{% endif %}>Rejected</option>
                                     </select>
                                     <button class="btn btn-primary btn-sm" type="submit">Save</button>

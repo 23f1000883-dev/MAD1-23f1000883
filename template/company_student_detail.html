@@ -33,6 +33,7 @@
                             <th>Email</th>
                             <th>Phone</th>
                             <th>Course</th>
+                            <th>Skills</th>
                             <th>Graduation Year</th>
                             <th>Resume URL</th>
                         </tr>
@@ -44,6 +45,7 @@
                             <td>{{ student.email }}</td>
                             <td>{{ student.phone or 'N/A' }}</td>
                             <td>{{ student.course or 'N/A' }}</td>
+                            <td>{{ student.skills or 'N/A' }}</td>
                             <td>{{ student.graduation_year or 'N/A' }}</td>
                             <td>
                                 {% if student.resume_url %}
