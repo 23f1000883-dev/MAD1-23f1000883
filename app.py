@@ -9,7 +9,7 @@ import os
 app = Flask(__name__, template_folder="template")
 app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///placement_portal.db"
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
-app.secret_key = "your-secret-key-change-this"  # Change this in production
+app.secret_key = "Project"  # Change this in production
 
 
 @app.route('/')
