@@ -1,0 +1,381 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Admin Portal</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-sRIl4kxILFvY47J16cr9ZwB07vP4J8+LH7qKQnuqkuIAvNWLzeN8tE5YBujZqJLB" crossorigin="anonymous">
+</head>
+<body class="bg-light">
+    <div class="container py-4">
+        {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            {% for category, message in messages %}
+            <div class="alert alert-{{ category }} mb-2">{{ message }}</div>
+            {% endfor %}
+        {% endif %}
+        {% endwith %}
+
+        <nav class="navbar navbar-expand-lg bg-white border rounded px-3 mb-4">
+            <span class="navbar-brand mb-0 h1">Admin Portal</span>
+            <form class="d-flex ms-auto me-2" method="GET" action="{{ url_for('admin_portal') }}">
+                <input class="form-control form-control-sm me-2" type="search" name="search" value="{{ search or '' }}" placeholder="Search student/company">
+                <button class="btn btn-primary btn-sm" type="submit">Search</button>
+            </form>
+            <a href="{{ url_for('admin_portal') }}" class="btn btn-outline-secondary btn-sm me-2">Clear</a>
+            <a href="{{ url_for('logout') }}" class="btn btn-outline-danger btn-sm">Logout</a>
+        </nav>
+
+        <div class="row g-3 mb-4">
+            <div class="col-6 col-md-3">
+                <div class="card">
+                    <div class="card-body">
+                        <p class="mb-1 text-muted">Students</p>
+                        <h2 class="h5 mb-0">{{ students|length }}</h2>
+                    </div>
+                </div>
+            </div>
+            <div class="col-6 col-md-3">
+                <div class="card">
+                    <div class="card-body">
+                        <p class="mb-1 text-muted">Companies</p>
+                        <h2 class="h5 mb-0">{{ companies|length }}</h2>
+                    </div>
+                </div>
+            </div>
+            <div class="col-6 col-md-3">
+                <div class="card">
+                    <div class="card-body">
+                        <p class="mb-1 text-muted">Job Positions</p>
+                        <h2 class="h5 mb-0">{{ job_positions|length }}</h2>
+                    </div>
+                </div>
+            </div>
+            <div class="col-6 col-md-3">
+                <div class="card">
+                    <div class="card-body">
+                        <p class="mb-1 text-muted">Applications</p>
+                        <h2 class="h5 mb-0">{{ applications|length }}</h2>
+                    </div>
+                </div>
+            </div>
+            <div class="col-6 col-md-3">
+                <div class="card">
+                    <div class="card-body">
+                        <p class="mb-1 text-muted">Blacklisted Companies</p>
+                        <h2 class="h5 mb-0">{{ blacklisted_count }}</h2>
+                    </div>
+                </div>
+            </div>
+            <div class="col-6 col-md-3">
+                <div class="card">
+                    <div class="card-body">
+                        <p class="mb-1 text-muted">Approved Companies</p>
+                        <h2 class="h5 mb-0">{{ approved_companies_count }}</h2>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <section class="mb-4">
+            <h2 class="h5">Students</h2>
+            <div class="table-responsive">
+                <table class="table table-bordered table-sm align-middle">
+                    <thead class="table-light">
+                        <tr>
+                            <th>ID</th>
+                            <th>Full Name</th>
+                            <th>Email</th>
+                            <th>Phone</th>
+                            <th>Course</th>
+                            <th>Graduation Year</th>
+                            <th>Status</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for student in students %}
+                        <tr>
+                            <td>{{ student.id }}</td>
+                            <td>{{ student.full_name }}</td>
+                            <td>{{ student.email }}</td>
+                            <td>{{ student.phone or 'N/A' }}</td>
+                            <td>{{ student.course or 'N/A' }}</td>
+                            <td>{{ student.graduation_year or 'N/A' }}</td>
+                            <td>
+                                {% if student.is_deactivated %}
+                                <span class="badge bg-secondary">Deactivated</span>
+                                {% else %}
+                                <span class="badge bg-success">Active</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <div class="d-flex flex-column gap-2">
+                                    <form method="POST" action="{{ url_for('admin_edit_student', student_id=student.id) }}" class="row g-1">
+                                        <div class="col-12"><input name="full_name" class="form-control form-control-sm" value="{{ student.full_name }}" required></div>
+                                        <div class="col-12"><input name="phone" class="form-control form-control-sm" value="{{ student.phone or '' }}" placeholder="Phone"></div>
+                                        <div class="col-12"><input name="course" class="form-control form-control-sm" value="{{ student.course or '' }}" placeholder="Course"></div>
+                                        <div class="col-12"><input name="graduation_year" class="form-control form-control-sm" value="{{ student.graduation_year or '' }}" placeholder="Graduation Year"></div>
+                                        <div class="col-12"><button type="submit" class="btn btn-primary btn-sm">Edit</button></div>
+                                    </form>
+
+                                    {% if student.is_deactivated %}
+                                    <form method="POST" action="{{ url_for('activate_student', student_id=student.id) }}">
+                                        <button type="submit" class="btn btn-success btn-sm">Activate</button>
+                                    </form>
+                                    {% else %}
+                                    <form method="POST" action="{{ url_for('deactivate_student', student_id=student.id) }}">
+                                        <button type="submit" class="btn btn-warning btn-sm">Deactivate</button>
+                                    </form>
+                                    {% endif %}
+
+                                    <form method="POST" action="{{ url_for('admin_remove_student', student_id=student.id) }}">
+                                        <button type="submit" class="btn btn-outline-danger btn-sm">Remove</button>
+                                    </form>
+                                </div>
+                            </td>
+                        </tr>
+                        {% else %}
+                        <tr><td colspan="8" class="text-center">No students found</td></tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <section class="mb-4">
+            <h2 class="h5">Companies</h2>
+            <div class="table-responsive">
+                <table class="table table-bordered table-sm align-middle">
+                    <thead class="table-light">
+                        <tr>
+                            <th>ID</th>
+                            <th>Name</th>
+                            <th>Email</th>
+                            <th>Industry</th>
+                            <th>Location</th>
+                            <th>Website</th>
+                            <th>Approved</th>
+                            <th>Blacklisted</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for company in companies %}
+                        <tr>
+                            <td>{{ company.id }}</td>
+                            <td>{{ company.name }}</td>
+                            <td>{{ company.email }}</td>
+                            <td>{{ company.industry or 'N/A' }}</td>
+                            <td>{{ company.location or 'N/A' }}</td>
+                            <td>{{ company.website or 'N/A' }}</td>
+                            <td>
+                                {% if company.is_approved %}
+                                <span class="badge bg-success">Yes</span>
+                                {% else %}
+                                <span class="badge bg-secondary">No</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if company.is_blacklisted %}
+                                <span class="badge bg-danger">Yes</span>
+                                {% else %}
+                                <span class="badge bg-success">No</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <div class="d-flex flex-column gap-2">
+                                    <form method="POST" action="{{ url_for('admin_edit_company', company_id=company.id) }}" class="row g-1">
+                                        <div class="col-12"><input name="industry" class="form-control form-control-sm" value="{{ company.industry or '' }}" placeholder="Industry"></div>
+                                        <div class="col-12"><input name="location" class="form-control form-control-sm" value="{{ company.location or '' }}" placeholder="Location"></div>
+                                        <div class="col-12"><input name="website" class="form-control form-control-sm" value="{{ company.website or '' }}" placeholder="Website"></div>
+                                        <div class="col-12"><button type="submit" class="btn btn-primary btn-sm">Edit</button></div>
+                                    </form>
+
+                                    {% if company.is_approved %}
+                                    <form method="post" action="{{ url_for('reject_company', company_id=company.id) }}">
+                                        <button type="submit" class="btn btn-secondary btn-sm">Reject</button>
+                                    </form>
+                                    {% else %}
+                                    <form method="post" action="{{ url_for('approve_company', company_id=company.id) }}">
+                                        <button type="submit" class="btn btn-success btn-sm">Approve</button>
+                                    </form>
+                                    {% endif %}
+
+                                    {% if company.is_blacklisted %}
+                                    <form method="post" action="{{ url_for('allow_company', company_id=company.id) }}">
+                                        <button type="submit" class="btn btn-success btn-sm">Allow</button>
+                                    </form>
+                                    {% else %}
+                                    <form method="post" action="{{ url_for('blacklist_company', company_id=company.id) }}">
+                                        <button type="submit" class="btn btn-warning btn-sm">Blacklist</button>
+                                    </form>
+                                    {% endif %}
+
+                                    <form method="post" action="{{ url_for('admin_remove_company', company_id=company.id) }}">
+                                        <button type="submit" class="btn btn-outline-danger btn-sm">Remove</button>
+                                    </form>
+                                </div>
+                            </td>
+                        </tr>
+                        {% else %}
+                        <tr><td colspan="9" class="text-center">No companies found</td></tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <section class="mb-4">
+            <h2 class="h5">Job Positions</h2>
+            <div class="table-responsive">
+                <table class="table table-bordered table-sm align-middle">
+                    <thead class="table-light">
+                        <tr>
+                            <th>ID</th>
+                            <th>Company</th>
+                            <th>Title</th>
+                            <th>Status</th>
+                            <th>Location</th>
+                            <th>Salary (LPA)</th>
+                            <th>Active</th>
+                            <th>Posted At</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for position in job_positions %}
+                        <tr>
+                            <td>{{ position.id }}</td>
+                            <td>{{ position.company.name }}</td>
+                            <td>{{ position.title }}</td>
+                            <td>{{ position.status }}</td>
+                            <td>{{ position.location or 'N/A' }}</td>
+                            <td>{{ position.salary_lpa or 'N/A' }}</td>
+                            <td>{{ 'Yes' if position.is_active else 'No' }}</td>
+                            <td>{{ position.posted_at.strftime('%Y-%m-%d %H:%M') if position.posted_at else 'N/A' }}</td>
+                            <td>
+                                <div class="d-flex gap-2">
+                                    <form method="POST" action="{{ url_for('approve_job', job_id=position.id) }}">
+                                        <button type="submit" class="btn btn-success btn-sm">Approve</button>
+                                    </form>
+                                    <form method="POST" action="{{ url_for('reject_job', job_id=position.id) }}">
+                                        <button type="submit" class="btn btn-warning btn-sm">Reject</button>
+                                    </form>
+                                    <form method="POST" action="{{ url_for('close_job', job_id=position.id) }}">
+                                        <button type="submit" class="btn btn-secondary btn-sm">Close</button>
+                                    </form>
+                                </div>
+                            </td>
+                        </tr>
+                        {% else %}
+                        <tr><td colspan="9" class="text-center">No job positions found</td></tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <section class="mb-4">
+            <h2 class="h5">Applications</h2>
+            <div class="table-responsive">
+                <table class="table table-bordered table-sm align-middle">
+                    <thead class="table-light">
+                        <tr>
+                            <th>ID</th>
+                            <th>Student</th>
+                            <th>Company</th>
+                            <th>Position</th>
+                            <th>Status</th>
+                            <th>Applied At</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for application in applications %}
+                        <tr>
+                            <td>{{ application.id }}</td>
+                            <td>{{ application.student.full_name }}</td>
+                            <td>{{ application.job_position.company.name }}</td>
+                            <td>{{ application.job_position.title }}</td>
+                            <td>{{ application.status }}</td>
+                            <td>{{ application.applied_at.strftime('%Y-%m-%d %H:%M') if application.applied_at else 'N/A' }}</td>
+                        </tr>
+                        {% else %}
+                        <tr><td colspan="6" class="text-center">No applications found</td></tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <section class="mb-4">
+            <h2 class="h5 mb-3">Placements</h2>
+            
+            <!-- Create Placement Form -->
+            <div class="card mb-3 bg-light">
+                <div class="card-body">
+                    <h6 class="card-title mb-2">Create New Placement</h6>
+                    <form method="POST" action="{{ url_for('admin_create_placement') }}" class="row g-2 align-items-end">
+                        <div class="col-auto">
+                            <label class="form-label" for="application_id">Application ID</label>
+                            <input id="application_id" name="application_id" type="number" class="form-control form-control-sm" placeholder="e.g., 1" required>
+                        </div>
+                        <div class="col-auto">
+                            <label class="form-label" for="offered_package_lpa">Offered Package (LPA)</label>
+                            <input id="offered_package_lpa" name="offered_package_lpa" type="number" class="form-control form-control-sm" placeholder="e.g., 7.5" step="0.1">
+                        </div>
+                        <div class="col-auto">
+                            <button type="submit" class="btn btn-sm btn-success">Create Placement</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Placements Table -->
+            <div class="table-responsive">
+                <table class="table table-bordered table-sm align-middle">
+                    <thead class="table-light">
+                        <tr>
+                            <th>ID</th>
+                            <th>Student</th>
+                            <th>Company</th>
+                            <th>Position</th>
+                            <th>Offered Package (LPA)</th>
+                            <th>Placed At</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for placement in placements %}
+                        <tr>
+                            <td>{{ placement.id }}</td>
+                            <td>{{ placement.application.student.full_name }}</td>
+                            <td>{{ placement.application.job_position.company.name }}</td>
+                            <td>{{ placement.application.job_position.title }}</td>
+                            <td>
+                                <form method="POST" action="{{ url_for('admin_edit_placement', placement_id=placement.id) }}" class="row g-1 m-0">
+                                    <div class="col-auto">
+                                        <input name="offered_package_lpa" type="number" class="form-control form-control-sm" value="{{ placement.offered_package_lpa or '' }}" step="0.1">
+                                    </div>
+                                    <div class="col-auto">
+                                        <button type="submit" class="btn btn-sm btn-primary">Update</button>
+                                    </div>
+                                </form>
+                            </td>
+                            <td>{{ placement.placed_at.strftime('%Y-%m-%d %H:%M') if placement.placed_at else 'N/A' }}</td>
+                            <td>
+                                <form method="POST" action="{{ url_for('admin_remove_placement', placement_id=placement.id) }}" class="d-inline">
+                                    <button type="submit" class="btn btn-sm btn-outline-danger" onclick="return confirm('Are you sure you want to remove this placement?')">Remove</button>
+                                </form>
+                            </td>
+                        </tr>
+                        {% else %}
+                        <tr><td colspan="7" class="text-center">No placements found</td></tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </section>
+    </div>
+</body>
+</html>

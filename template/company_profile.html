@@ -1,0 +1,63 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Edit Company Profile</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-sRIl4kxILFvY47J16cr9ZwB07vP4J8+LH7qKQnuqkuIAvNWLzeN8tE5YBujZqJLB" crossorigin="anonymous">
+</head>
+<body class="bg-light">
+    <main class="container py-4">
+        {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            {% for category, message in messages %}
+            <div class="alert alert-{{ category }} mb-2">{{ message }}</div>
+            {% endfor %}
+        {% endif %}
+        {% endwith %}
+
+        <div class="card shadow-sm">
+            <div class="card-body">
+                <h1 class="h4 mb-3">Edit Company Profile</h1>
+                <form method="POST" class="row g-3">
+                    <!-- Read-only fields -->
+                    <div class="col-md-6">
+                        <label class="form-label">Company Name</label>
+                        <input class="form-control" value="{{ company.name }}" readonly>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label">Email</label>
+                        <input class="form-control" value="{{ company.email }}" readonly>
+                    </div>
+
+                    <!-- Editable fields -->
+                    <div class="col-md-6">
+                        <label class="form-label" for="industry">Industry</label>
+                        <input id="industry" name="industry" class="form-control" 
+                               value="{{ company.industry or '' }}" 
+                               placeholder="e.g., Software, FinTech, Cloud Services" required>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label" for="location">Location</label>
+                        <input id="location" name="location" class="form-control" 
+                               value="{{ company.location or '' }}" 
+                               placeholder="e.g., Bengaluru, Mumbai, Hyderabad" required>
+                    </div>
+                    <div class="col-12">
+                        <label class="form-label" for="website">Website</label>
+                        <input id="website" name="website" class="form-control" 
+                               value="{{ company.website or '' }}" 
+                               placeholder="https://www.example.com">
+                    </div>
+
+                    <!-- Action buttons -->
+                    <div class="col-12 d-flex gap-2">
+                        <button type="submit" class="btn btn-primary">Save Changes</button>
+                        <a href="{{ url_for('company_dashboard') }}" class="btn btn-outline-secondary">Back</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </main>
+</body>
+</html>

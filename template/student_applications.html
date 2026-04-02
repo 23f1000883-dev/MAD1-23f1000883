@@ -1,0 +1,63 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>My Applications</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-sRIl4kxILFvY47J16cr9ZwB07vP4J8+LH7qKQnuqkuIAvNWLzeN8tE5YBujZqJLB" crossorigin="anonymous">
+</head>
+<body class="bg-light">
+    <main class="container py-4">
+        {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            {% for category, message in messages %}
+            <div class="alert alert-{{ category }} mb-2">{{ message }}</div>
+            {% endfor %}
+        {% endif %}
+        {% endwith %}
+
+        <div class="card shadow-sm mb-3">
+            <div class="card-body">
+                <h1 class="h4 mb-3">My Applications</h1>
+                {% if applications %}
+                <div class="table-responsive">
+                    <table class="table table-striped align-middle">
+                        <thead>
+                            <tr>
+                                <th>Company</th>
+                                <th>Position</th>
+                                <th>Location</th>
+                                <th>Salary</th>
+                                <th>Status</th>
+                                <th>Applied On</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for application in applications %}
+                            <tr>
+                                <td>{{ application.job_position.company.name }}</td>
+                                <td>{{ application.job_position.title }}</td>
+                                <td>{{ application.job_position.location or 'N/A' }}</td>
+                                <td>{{ application.job_position.salary_lpa or 'N/A' }}</td>
+                                <td><span class="badge text-bg-secondary">{{ application.status }}</span></td>
+                                <td>{{ application.applied_at.strftime('%Y-%m-%d %H:%M') if application.applied_at else 'N/A' }}</td>
+                                <td>
+                                    <form method="POST" action="{{ url_for('withdraw_application', application_id=application.id) }}" class="d-inline">
+                                        <button type="submit" class="btn btn-sm btn-outline-danger" onclick="return confirm('Are you sure you want to withdraw this application?')">Withdraw</button>
+                                    </form>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <p class="text-muted">You have not applied for any drives yet.</p>
+                {% endif %}
+                <a href="{{ url_for('student_dashboard') }}" class="btn btn-outline-primary btn-sm">Back to Dashboard</a>
+            </div>
+        </div>
+    </main>
+</body>
+</html>

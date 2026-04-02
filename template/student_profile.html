@@ -1,0 +1,81 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Edit Profile</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-sRIl4kxILFvY47J16cr9ZwB07vP4J8+LH7qKQnuqkuIAvNWLzeN8tE5YBujZqJLB" crossorigin="anonymous">
+</head>
+<body class="bg-light">
+    <main class="container py-4">
+        {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            {% for category, message in messages %}
+            <div class="alert alert-{{ category }} mb-2">{{ message }}</div>
+            {% endfor %}
+        {% endif %}
+        {% endwith %}
+
+        <div class="card shadow-sm">
+            <div class="card-body">
+                <h1 class="h4 mb-3">Edit Profile</h1>
+                <form method="POST" class="row g-3">
+                    <div class="col-md-6">
+                        <label class="form-label">Full Name</label>
+                        <input class="form-control" value="{{ student.full_name }}" readonly>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label">Email</label>
+                        <input class="form-control" value="{{ student.email }}" readonly>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label" for="phone">Phone</label>
+                        <input id="phone" name="phone" class="form-control" value="{{ student.phone or '' }}" required>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label" for="course">Course</label>
+                        <input id="course" name="course" class="form-control" value="{{ student.course or '' }}" required>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label" for="graduation_year">Graduation Year</label>
+                        <input id="graduation_year" type="number" name="graduation_year" class="form-control" value="{{ student.graduation_year or '' }}" min="2000" max="2099" required>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label" for="resume_url">Resume URL</label>
+                        <input id="resume_url" name="resume_url" class="form-control" value="{{ student.resume_url or '' }}" placeholder="https://drive.google.com/...">
+                    </div>
+                    <div class="col-12 d-flex gap-2">
+                        <button type="submit" class="btn btn-primary">Save Changes</button>
+                        <a href="{{ url_for('student_dashboard') }}" class="btn btn-outline-secondary">Back</a>
+                        <button type="button" class="btn btn-danger ms-auto" data-bs-toggle="modal" data-bs-target="#deleteModal">Delete Account</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </main>
+
+    <!-- Delete Account Modal -->
+    <div class="modal fade" id="deleteModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Confirm Delete Account</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <p class="text-danger"><strong>Warning:</strong> This action cannot be undone!</p>
+                    <p>Are you sure you want to delete your account permanently? All your data including applications and placements will be deleted.</p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <form method="POST" action="{{ url_for('delete_student_account') }}" class="d-inline">
+                        <button type="submit" class="btn btn-danger">Yes, Delete Account</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NKSLY0aYKAgot0qtiC82GZ7KL2" crossorigin="anonymous"></script>
+</body>
+</html>
