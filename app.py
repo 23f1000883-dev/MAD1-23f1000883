@@ -221,80 +221,7 @@ def ensure_default_admin() -> None:
         db.session.commit()
 
 
-def seed_sample_data() -> None:
-    """Insert small sample data so admin portal can show meaningful records."""
-    ensure_student_deactivation_column()
 
-    sample_students = [
-        {
-            "full_name": "Aarav Sharma",
-            "email": "aarav.student@example.com",
-            "password": gph("student123"),
-            "phone": "9876543210",
-            "course": "B.Tech CSE",
-            "graduation_year": 2026,
-        },
-        {
-            "full_name": "Diya Patel",
-            "email": "diya.student@example.com",
-            "password": gph("student123"),
-            "phone": "9123456780",
-            "course": "B.Tech IT",
-            "graduation_year": 2027,
-        },
-        {
-            "full_name": "Rohan Verma",
-            "email": "rohan.student@example.com",
-            "password": gph("student123"),
-            "phone": "9988776655",
-            "course": "BCA",
-            "graduation_year": 2026,
-        },
-    ]
-
-    sample_companies = [
-        {
-            "name": "TechNova Solutions",
-            "email": "hr@technova.com",
-            "password": gph("company123"),
-            "industry": "Software",
-            "location": "Bengaluru",
-            "website": "https://technova.example.com",
-            "is_approved": True,
-        },
-        {
-            "name": "FinEdge Analytics",
-            "email": "careers@finedge.com",
-            "password": gph("company123"),
-            "industry": "FinTech",
-            "location": "Mumbai",
-            "website": "https://finedge.example.com",
-            "is_approved": True,
-        },
-        {
-            "name": "CloudAxis Labs",
-            "email": "jobs@cloudaxis.com",
-            "password": gph("company123"),
-            "industry": "Cloud Services",
-            "location": "Hyderabad",
-            "website": "https://cloudaxis.example.com",
-            "is_approved": True,
-        },
-    ]
-
-    for student_data in sample_students:
-        exists = Student.query.filter_by(email=student_data["email"]).first()
-        if not exists:
-            db.session.add(Student(**student_data))
-
-    for company_data in sample_companies:
-        exists = Company.query.filter(
-            (Company.name == company_data["name"]) | (Company.email == company_data["email"])
-        ).first()
-        if not exists:
-            db.session.add(Company(**company_data))
-
-    db.session.commit()
 
 
 # DATABASE Connection
@@ -310,7 +237,6 @@ with app.app_context():
     ensure_company_approval_column()  # add company approval flag
     ensure_jobposition_columns()  # add job status and metadata fields
     close_expired_job_positions()  # auto-close jobs with expired deadlines
-    seed_sample_data()  # make admin portal easier to demo
     ensure_default_admin()  # keep pre-existing admin ready
 
 @app.route('/home')
@@ -1106,15 +1032,6 @@ def student_job_details(position_id):
 def student_preview():
     """Public preview of student dashboard in a new tab from access page."""
     student = Student.query.order_by(Student.id.asc()).first()
-
-    if not student:
-        student = Student()
-        student.full_name = "Demo Student"
-        student.email = "demo.student@example.com"
-        student.password = gph("demo123")
-        student.phone = "0000000000"
-        student.course = "B.Tech"
-        student.graduation_year = 2026
 
     return render_template(
         'student.html',
