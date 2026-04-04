@@ -3,74 +3,94 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Placement Portal - Login</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-sRIl4kxILFvY47J16cr9ZwB07vP4J8+LH7qKQnuqkuIAvNWLzeN8tE5YBujZqJLB" crossorigin="anonymous">
+    <title>Placement Portal - Login Options</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-sRIl4kxILFv47J16cr9ZwB07vP4J8+LH7qKQnuqkuIAvNWLzeN8tE5YBujZqJLB" crossorigin="anonymous">
 </head>
 
-<body class="bg-light">
-    <main class="container-xl py-5">
-        <div class="row justify-content-center mb-3">
-            <div class="col-12 text-center">
-                <h1 class="h3">Login</h1>
-            </div>
-        </div>
+<body class="bg-body-tertiary">
+    <main class="container py-5">
+        <div class="row justify-content-center mb-4">
+            <div class="col-12 col-lg-10 col-xxl-9">
+                <div class="card border-0 shadow-lg overflow-hidden">
+                    <div class="row g-0 align-items-stretch">
+                        <div class="col-lg-5 text-white p-4 p-lg-5 d-flex flex-column justify-content-center bg-primary">
+                            <span class="badge text-bg-light text-primary rounded-pill align-self-start mb-3">Placement Portal</span>
+                            <h1 class="display-6 fw-semibold mb-3">Welcome back</h1>
+                            <p class="lead mb-4 text-white-50">
+                                Pick the right login page for your account and sign in in just a few steps.
+                            </p>
+                            <div class="d-flex gap-2 flex-wrap">
+                                <span class="badge text-bg-light text-primary">Student</span>
+                                <span class="badge text-bg-light text-primary">Company</span>
+                                <span class="badge text-bg-light text-primary">Admin</span>
+                            </div>
+                        </div>
 
-        {% with messages = get_flashed_messages(with_categories=true) %}
-        {% if messages %}
-        <div class="row justify-content-center mb-3">
-            <div class="col-12 col-xl-10">
-                {% for category, message in messages %}
-                <div class="alert alert-{{ category }} mb-2">{{ message }}</div>
-                {% endfor %}
-            </div>
-        </div>
-        {% endif %}
-        {% endwith %}
+                        <div class="col-lg-7 p-4 p-lg-5 bg-white">
+                            <div class="d-flex justify-content-between align-items-center mb-3">
+                                <div>
+                                    <h2 class="h4 mb-1">Login options</h2>
+                                    <p class="text-muted mb-0">Choose one card below to continue.</p>
+                                </div>
+                                <a href="{{ url_for('access') }}" class="btn btn-outline-secondary btn-sm">Home</a>
+                            </div>
 
-        <div class="row g-4 justify-content-center">
-            <div class="col-12 col-md-6 col-xl-4">
-                <div class="card shadow-sm h-100">
-                    <div class="card-body">
-                        <h2 class="h4 mb-3">Student Login</h2>
-                        <form action="{{ url_for('login') }}" method="POST">
-                            <div class="mb-2"><input type="email" class="form-control" name="email" placeholder="Student Email" required></div>
-                            <div class="mb-2"><input type="password" class="form-control" name="password" placeholder="Password" required></div>
-                            <button type="submit" class="btn btn-primary btn-sm">Login</button>
-                        </form>
+                            {% with messages = get_flashed_messages(with_categories=true) %}
+                            {% if messages %}
+                            <div class="mb-3">
+                                {% for category, message in messages %}
+                                <div class="alert alert-{{ category }} mb-2">{{ message }}</div>
+                                {% endfor %}
+                            </div>
+                            {% endif %}
+                            {% endwith %}
+
+                            <div class="row g-3">
+                                <div class="col-12 col-md-4">
+                                    <div class="card h-100 border-0 shadow-sm">
+                                        <div class="card-body d-flex flex-column">
+                                            <div class="rounded-circle bg-primary-subtle text-primary fw-bold d-inline-flex align-items-center justify-content-center mb-3" style="width: 2.75rem; height: 2.75rem;">S</div>
+                                            <h3 class="h5">Student</h3>
+                                            <p class="text-muted small flex-grow-1 mb-3">Use your student email to see jobs and applications.</p>
+                                            <a href="{{ url_for('student_login_page') }}" class="btn btn-primary w-100">Student Login</a>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="col-12 col-md-4">
+                                    <div class="card h-100 border-0 shadow-sm">
+                                        <div class="card-body d-flex flex-column">
+                                            <div class="rounded-circle bg-success-subtle text-success fw-bold d-inline-flex align-items-center justify-content-center mb-3" style="width: 2.75rem; height: 2.75rem;">C</div>
+                                            <h3 class="h5">Company</h3>
+                                            <p class="text-muted small flex-grow-1 mb-3">Use your company account to post jobs and review applicants.</p>
+                                            <a href="{{ url_for('company_login_page') }}" class="btn btn-success w-100">Company Login</a>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="col-12 col-md-4">
+                                    <div class="card h-100 border-0 shadow-sm">
+                                        <div class="card-body d-flex flex-column">
+                                            <div class="rounded-circle bg-warning-subtle text-warning-emphasis fw-bold d-inline-flex align-items-center justify-content-center mb-3" style="width: 2.75rem; height: 2.75rem;">A</div>
+                                            <h3 class="h5">Admin</h3>
+                                            <p class="text-muted small flex-grow-1 mb-3">Manage students, companies, and placements.</p>
+                                            <a href="{{ url_for('admin_login_page') }}" class="btn btn-warning w-100">Admin Login</a>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mt-4 pt-3 border-top">
+                                <p class="text-muted mb-0 small">Need a new account?</p>
+                                <div class="d-flex gap-2 flex-wrap">
+                                    <a href="{{ url_for('register_page') }}" class="btn btn-outline-success btn-sm">Go to Registration</a>
+                                    <a href="{{ url_for('access') }}" class="btn btn-outline-secondary btn-sm">Back to Home</a>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
-
-            <div class="col-12 col-md-6 col-xl-4">
-                <div class="card shadow-sm h-100">
-                    <div class="card-body">
-                        <h2 class="h4 mb-3">Company Login</h2>
-                        <form action="{{ url_for('company_login') }}" method="POST">
-                            <div class="mb-2"><input type="email" class="form-control" name="email" placeholder="Company Email" required></div>
-                            <div class="mb-2"><input type="password" class="form-control" name="password" placeholder="Password" required></div>
-                            <button type="submit" class="btn btn-primary btn-sm">Login</button>
-                        </form>
-                    </div>
-                </div>
-            </div>
-
-            <div class="col-12 col-md-6 col-xl-4">
-                <div class="card shadow-sm h-100">
-                    <div class="card-body">
-                        <h2 class="h4 mb-3">Admin Login</h2>
-                        <form action="{{ url_for('admin_login') }}" method="POST">
-                            <div class="mb-2"><input type="text" class="form-control" name="username" placeholder="Admin Username" required></div>
-                            <div class="mb-2"><input type="password" class="form-control" name="password" placeholder="Password" required></div>
-                            <button type="submit" class="btn btn-primary btn-sm">Login</button>
-                        </form>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <div class="text-center mt-4">
-            <a href="{{ url_for('register_page') }}" class="btn btn-success btn-sm">Create Account</a>
-            <a href="{{ url_for('access') }}" class="btn btn-outline-secondary btn-sm">Back to Home</a>
         </div>
     </main>
 </body>

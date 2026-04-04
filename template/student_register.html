@@ -1,0 +1,76 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Student Registration</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-sRIl4kxILFv47J16cr9ZwB07vP4J8+LH7qKQnuqkuIAvNWLzeN8tE5YBujZqJLB" crossorigin="anonymous">
+</head>
+<body class="bg-light">
+    <main class="container py-5">
+        <div class="row justify-content-center">
+            <div class="col-12 col-lg-7">
+                <div class="card shadow-sm">
+                    <div class="card-body p-4">
+                        <h1 class="h4 mb-2">Student Registration</h1>
+                        <p class="text-muted small mb-4">Fill in the required student details below.</p>
+
+                        {% with messages = get_flashed_messages(with_categories=true) %}
+                        {% if messages %}
+                        {% for category, message in messages %}
+                        <div class="alert alert-{{ category }}">{{ message }}</div>
+                        {% endfor %}
+                        {% endif %}
+                        {% endwith %}
+
+                        <form method="POST" action="{{ url_for('register') }}" enctype="multipart/form-data">
+                            <input type="hidden" name="account_type" value="student">
+
+                            <div class="mb-3">
+                                <label class="form-label">Full Name</label>
+                                <input class="form-control" name="full_name" required>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Email</label>
+                                <input class="form-control" type="email" name="email" required>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Password</label>
+                                <input class="form-control" type="password" name="password" required>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Phone</label>
+                                <input class="form-control" name="phone" required>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Course</label>
+                                <input class="form-control" name="course" required>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Graduation Year</label>
+                                <input class="form-control" type="number" name="graduation_year" required>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Skills</label>
+                                <input class="form-control" name="skills" placeholder="Optional, separated by commas">
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Resume</label>
+                                <input class="form-control" type="file" name="resume" accept=".pdf,.doc,.docx">
+                                <div class="form-text">Optional. PDF, DOC, or DOCX only.</div>
+                            </div>
+
+                            <button class="btn btn-success w-100" type="submit">Register Student</button>
+                        </form>
+
+                        <div class="d-flex justify-content-between mt-3">
+                            <a href="{{ url_for('student_login_page') }}">Already have an account?</a>
+                            <a href="{{ url_for('register_page') }}">Back</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+</body>
+</html>

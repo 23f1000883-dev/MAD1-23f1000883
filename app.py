@@ -226,9 +226,34 @@ def login_page():
     return render_template("login.html")
 
 
+@app.route('/student-login-page')
+def student_login_page():
+    return render_template("student_login.html")
+
+
+@app.route('/company-login-page')
+def company_login_page():
+    return render_template("company_login.html")
+
+
+@app.route('/admin-login-page')
+def admin_login_page():
+    return render_template("admin_login.html")
+
+
 @app.route('/register-page')
 def register_page():
     return render_template("register.html")
+
+
+@app.route('/student-register-page')
+def student_register_page():
+    return render_template("student_register.html")
+
+
+@app.route('/company-register-page')
+def company_register_page():
+    return render_template("company_register.html")
 
 
 # ADMIN LOGIN
@@ -1119,6 +1144,8 @@ def edit_profile():
         return redirect(url_for("access"))
     
     if request.method == 'POST':
+        full_name = (request.form.get("full_name") or "").strip()
+        email = (request.form.get("email") or "").strip().lower()
         phone = request.form.get("phone") or ""
         course = request.form.get("course") or ""
         skills = request.form.get("skills") or ""
@@ -1126,7 +1153,18 @@ def edit_profile():
         resume_file = request.files.get("resume")
         graduation_year_raw = request.form.get("graduation_year") or "0"
         graduation_year = int(graduation_year_raw) if graduation_year_raw.isdigit() else 0
+
+        if not full_name or not email:
+            flash("Full name and email are required.", "warning")
+            return redirect(url_for("edit_profile"))
+
+        email_owner = Student.query.filter_by(email=email).first()
+        if email_owner and email_owner.id != student.id:
+            flash("This email is already registered to another student.", "warning")
+            return redirect(url_for("edit_profile"))
         
+        student.full_name = full_name
+        student.email = email
         student.phone = phone
         student.course = course
         student.skills = skills
@@ -1142,6 +1180,8 @@ def edit_profile():
         
         try:
             db.session.commit()
+            session['student_name'] = student.full_name
+            session['student_email'] = student.email
             print(f"Profile updated for student {student.id}")
             flash("Profile updated successfully.", "success")
         except Exception as e:
@@ -1154,7 +1194,7 @@ def edit_profile():
     return render_template('student_profile.html', student=student)
 
 
-# DELETE STUDENT ACCOUNT
+
 @app.route('/student/delete-account', methods=['POST'])
 def delete_student_account():
     if 'student_id' not in session:
@@ -1339,7 +1379,7 @@ def admin_edit_placement(placement_id):
     return redirect(url_for("admin_portal"))
 
 
-# ADMIN: DELETE PLACEMENT
+
 @app.route('/admin/placement/<int:placement_id>/remove', methods=['POST'])
 def admin_remove_placement(placement_id):
     if 'admin_id' not in session:
