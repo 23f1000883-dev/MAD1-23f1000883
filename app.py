@@ -293,11 +293,11 @@ def render_admin_portal_page(template_name, active_page="overview"):
             print(f"Admin portal query skipped due to schema mismatch: {error}")
             return []
 
-    students = safe_all(lambda: Student.query.order_by(Student.id.desc()))
-    all_companies = safe_all(lambda: Company.query.order_by(Company.id.desc()))
-    job_positions = safe_all(lambda: JobPosition.query.order_by(JobPosition.id.desc()))
-    applications = safe_all(lambda: Application.query.order_by(Application.id.desc()))
-    placements = safe_all(lambda: Placement.query.order_by(Placement.id.desc()))
+    students = safe_all(lambda: Student.query.order_by(Student.id.asc()))
+    all_companies = safe_all(lambda: Company.query.order_by(Company.id.asc()))
+    job_positions = safe_all(lambda: JobPosition.query.order_by(JobPosition.id.asc()))
+    applications = safe_all(lambda: Application.query.order_by(Application.id.asc()))
+    placements = safe_all(lambda: Placement.query.order_by(Placement.id.asc()))
 
     if search:
         students = [
@@ -939,10 +939,10 @@ def company_dashboard():
         session.clear()
         return redirect(url_for("access"))
 
-    positions = JobPosition.query.filter_by(company_id=company.id).order_by(JobPosition.id.desc()).all()
+    positions = JobPosition.query.filter_by(company_id=company.id).order_by(JobPosition.id.asc()).all()
     applications = Application.query.join(JobPosition).filter(
         JobPosition.company_id == company.id
-    ).order_by(Application.id.desc()).all()
+    ).order_by(Application.id.asc()).all()
 
     applicant_counts = {}
     for position in positions:
@@ -985,7 +985,7 @@ def company_student_details():
     student_applications = Application.query.join(JobPosition).filter(
         Application.student_id == student.id,
         JobPosition.company_id == company.id
-    ).order_by(Application.id.desc()).all()
+    ).order_by(Application.id.asc()).all()
 
     return render_template(
         'company_student_detail.html',
@@ -1343,7 +1343,7 @@ def student_company_details():
         company_id=matched_company.id,
         is_active=True,
         status="approved"
-    ).order_by(JobPosition.id.desc()).all()
+    ).order_by(JobPosition.id.asc()).all()
 
     return render_template(
         'student_company_detail.html',

@@ -6,6 +6,81 @@
     <title>Admin Portal</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <style>
+        .portal-container {
+            max-width: 98%;
+        }
+        .table-responsive {
+            border: 1px solid #e9ecef;
+            border-radius: 0.5rem;
+            background: #ffffff;
+            overflow-x: auto;
+            box-shadow: 0 2px 8px rgba(15, 23, 42, 0.06);
+        }
+        .table-responsive .table {
+            width: 100%;
+            min-width: 0;
+            margin-bottom: 0;
+            font-size: 0.86rem;
+            table-layout: fixed;
+        }
+        .table-responsive .table th,
+        .table-responsive .table td {
+            padding: 0.55rem 0.6rem;
+            white-space: normal;
+            word-break: break-word;
+            overflow-wrap: anywhere;
+            line-height: 1.35;
+            vertical-align: middle;
+        }
+        .table-responsive .table thead th {
+            background: #eef2f7;
+            color: #1f2937;
+            font-weight: 700;
+            font-size: 0.78rem;
+            text-transform: uppercase;
+            letter-spacing: 0.03em;
+            border-bottom-width: 2px;
+        }
+        .table-responsive .table tbody tr:nth-child(even) {
+            background: #fafcff;
+        }
+        .table-responsive .table tbody tr:hover {
+            background: #eef5ff;
+        }
+        .table-responsive .table .badge {
+            font-size: 0.72rem;
+            font-weight: 600;
+        }
+        .table-responsive .table .btn {
+            white-space: nowrap;
+        }
+        .table-responsive .table th:first-child,
+        .table-responsive .table td:first-child {
+            width: 64px;
+            text-align: center;
+            font-weight: 600;
+        }
+        .table-responsive .table th:nth-child(2),
+        .table-responsive .table td:nth-child(2) {
+            min-width: 150px;
+        }
+        .table-responsive .table th:nth-child(3),
+        .table-responsive .table td:nth-child(3) {
+            min-width: 220px;
+        }
+        .table-responsive .table th:last-child,
+        .table-responsive .table td:last-child {
+            min-width: 170px;
+        }
+        .table-sticky-cols {
+            border-collapse: collapse;
+            border-spacing: 0;
+        }
+        .table-sticky-cols th,
+        .table-sticky-cols td {
+            position: static;
+            left: auto;
+        }
         .analytics-card {
             border: 1px solid #e9ecef;
             border-radius: 0.9rem;
@@ -106,7 +181,7 @@
         .admin-side-nav {
             position: sticky;
             top: 1rem;
-            max-width: 220px;
+            max-width: 180px;
             margin-right: auto;
         }
         .quick-side-panel {
@@ -147,9 +222,9 @@
     </style>
 </head>
 <body class="bg-light">
-    <div class="container py-4">
+    <div class="container-fluid portal-container py-4">
         <div class="row g-4 align-items-start">
-            <aside class="col-12 col-lg-3 order-1">
+            <aside class="col-12 col-lg-2 order-1">
                 <div class="admin-side-nav">
                     <div class="quick-side-panel shadow-sm">
                         <a class="quick-side-link" href="#overview">Overview</a>
@@ -164,7 +239,7 @@
                 </div>
             </aside>
 
-            <div class="col-12 col-lg-9 order-2">
+            <div class="col-12 col-lg-10 order-2">
         {% with messages = get_flashed_messages(with_categories=true) %}
         {% if messages %}
             {% for category, message in messages %}
@@ -474,7 +549,7 @@
         <section id="students" class="mb-4">
             <h2 class="h5">Students</h2>
             <div class="table-responsive">
-                <table class="table table-bordered table-sm align-middle">
+                <table class="table table-bordered table-sm align-middle table-sticky-cols">
                     <thead class="table-light">
                         <tr>
                             <th>ID</th>
@@ -545,7 +620,7 @@
         <section id="companies" class="mb-4">
             <h2 class="h5">Companies</h2>
             <div class="table-responsive">
-                <table class="table table-bordered table-sm align-middle">
+                <table class="table table-bordered table-sm align-middle table-sticky-cols">
                     <thead class="table-light">
                         <tr>
                             <th>ID</th>
@@ -608,7 +683,7 @@
         <section id="blacklisted-companies" class="mb-4">
             <h2 class="h5">Blacklisted Companies</h2>
             <div class="table-responsive">
-                <table class="table table-bordered table-sm align-middle">
+                <table class="table table-bordered table-sm align-middle table-sticky-cols">
                     <thead class="table-light">
                         <tr>
                             <th>ID</th>
@@ -654,7 +729,7 @@
         <section id="job-positions" class="mb-4">
             <h2 class="h5">Job Positions</h2>
             <div class="table-responsive">
-                <table class="table table-bordered table-sm align-middle">
+                <table class="table table-bordered table-sm align-middle table-sticky-cols">
                     <thead class="table-light">
                         <tr>
                             <th>ID</th>
@@ -710,7 +785,7 @@
         <section id="applications" class="mb-4">
             <h2 class="h5">Applications</h2>
             <div class="table-responsive">
-                <table class="table table-bordered table-sm align-middle">
+                <table class="table table-bordered table-sm align-middle table-sticky-cols">
                     <thead class="table-light">
                         <tr>
                             <th>ID</th>
@@ -767,7 +842,7 @@
 
             <!-- Placements Table -->
             <div class="table-responsive">
-                <table class="table table-bordered table-sm align-middle">
+                <table class="table table-bordered table-sm align-middle table-sticky-cols">
                     <thead class="table-light">
                         <tr>
                             <th>ID</th>
