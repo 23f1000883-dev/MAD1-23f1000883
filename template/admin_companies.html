@@ -1,0 +1,51 @@
+{% extends 'admin_layout.html' %}
+{% block admin_content %}
+<section class="mb-4">
+    <h2 class="h5">Companies</h2>
+    <div class="table-responsive">
+        <table class="table table-bordered table-sm align-middle">
+            <thead class="table-light">
+                <tr>
+                    <th>ID</th><th>Name</th><th>Email</th><th>Industry</th><th>Location</th><th>Website</th><th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for company in companies %}
+                <tr>
+                    <td>{{ company.id }}</td>
+                    <td>{{ company.name }}</td>
+                    <td>{{ company.email }}</td>
+                    <td>{{ company.industry or 'N/A' }}</td>
+                    <td>{{ company.location or 'N/A' }}</td>
+                    <td>{{ company.website or 'N/A' }}</td>
+                    <td>
+                        <div class="d-flex flex-wrap gap-2 align-items-start">
+                            <form method="POST" action="{{ url_for('admin_edit_company', company_id=company.id) }}" class="row g-1">
+                                <div class="col-12"><input name="industry" class="form-control form-control-sm" value="{{ company.industry or '' }}" placeholder="Industry"></div>
+                                <div class="col-12"><input name="location" class="form-control form-control-sm" value="{{ company.location or '' }}" placeholder="Location"></div>
+                                <div class="col-12"><input name="website" class="form-control form-control-sm" value="{{ company.website or '' }}" placeholder="Website"></div>
+                                <div class="col-12"><button type="submit" class="btn btn-primary btn-sm">Edit</button></div>
+                            </form>
+                            {% if company.is_approved %}
+                            <form method="post" action="{{ url_for('reject_company', company_id=company.id) }}"><button type="submit" class="btn btn-secondary btn-sm">Reject</button></form>
+                            {% else %}
+                            <form method="post" action="{{ url_for('approve_company', company_id=company.id) }}"><button type="submit" class="btn btn-success btn-sm">Approve</button></form>
+                            {% endif %}
+                            <form method="post" action="{{ url_for('blacklist_company', company_id=company.id) }}"><button type="submit" class="btn btn-warning btn-sm">Blacklist</button></form>
+                            <form method="post" action="{{ url_for('admin_remove_company', company_id=company.id) }}"><button type="submit" class="btn btn-outline-danger btn-sm">Remove</button></form>
+                        </div>
+                    </td>
+                </tr>
+                {% else %}
+                <tr><td colspan="7" class="text-center">No companies found</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</section>
+
+<section class="mb-4">
+    <h2 class="h5">Blacklisted Companies</h2>
+    <p class="text-muted small mb-3">Use the left sidebar to open the separate Blacklisted page for a focused view.</p>
+</section>
+{% endblock %}

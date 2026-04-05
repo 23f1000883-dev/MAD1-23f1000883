@@ -1,0 +1,45 @@
+{% extends 'admin_layout.html' %}
+{% block admin_content %}
+<section class="mb-4">
+    <h2 class="h5 mb-3">Placements</h2>
+    <div class="card mb-3 bg-light">
+        <div class="card-body">
+            <h6 class="card-title mb-2">Create New Placement</h6>
+            <form method="POST" action="{{ url_for('admin_create_placement') }}" class="row g-2 align-items-end">
+                <div class="col-auto"><label class="form-label" for="application_id">Application ID</label><input id="application_id" name="application_id" type="number" class="form-control form-control-sm" placeholder="e.g., 1" required></div>
+                <div class="col-auto"><label class="form-label" for="offered_package_lpa">Offered Package (LPA)</label><input id="offered_package_lpa" name="offered_package_lpa" type="number" class="form-control form-control-sm" placeholder="e.g., 7.5" step="0.1"></div>
+                <div class="col-auto"><button type="submit" class="btn btn-sm btn-success">Create Placement</button></div>
+            </form>
+        </div>
+    </div>
+    <div class="table-responsive">
+        <table class="table table-bordered table-sm align-middle">
+            <thead class="table-light">
+                <tr>
+                    <th>ID</th><th>Student</th><th>Company</th><th>Position</th><th>Offered Package (LPA)</th><th>Placed At</th><th>Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for placement in placements %}
+                <tr>
+                    <td>{{ placement.id }}</td>
+                    <td>{{ placement.application.student.full_name }}</td>
+                    <td>{{ placement.application.job_position.company.name }}</td>
+                    <td>{{ placement.application.job_position.title }}</td>
+                    <td>
+                        <form method="POST" action="{{ url_for('admin_edit_placement', placement_id=placement.id) }}" class="row g-1 m-0">
+                            <div class="col-auto"><input name="offered_package_lpa" type="number" class="form-control form-control-sm" value="{{ placement.offered_package_lpa or '' }}" step="0.1"></div>
+                            <div class="col-auto"><button type="submit" class="btn btn-sm btn-primary">Update</button></div>
+                        </form>
+                    </td>
+                    <td>{{ placement.placed_at.strftime('%Y-%m-%d %H:%M') if placement.placed_at else 'N/A' }}</td>
+                    <td><form method="POST" action="{{ url_for('admin_remove_placement', placement_id=placement.id) }}" class="d-inline"><button type="submit" class="btn btn-sm btn-outline-danger" onclick="return confirm('Are you sure you want to remove this placement?')">Remove</button></form></td>
+                </tr>
+                {% else %}
+                <tr><td colspan="7" class="text-center">No placements found</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</section>
+{% endblock %}

@@ -277,8 +277,7 @@ def admin_login():
     return redirect(url_for("login_page"))
 
 
-@app.route('/admin-portal')
-def admin_portal():
+def render_admin_portal_page(template_name, active_page="overview"):
     if 'admin_id' not in session:
         return redirect(url_for("access"))
 
@@ -295,7 +294,7 @@ def admin_portal():
             return []
 
     students = safe_all(lambda: Student.query.order_by(Student.id.desc()))
-    companies = safe_all(lambda: Company.query.order_by(Company.id.desc()))
+    all_companies = safe_all(lambda: Company.query.order_by(Company.id.desc()))
     job_positions = safe_all(lambda: JobPosition.query.order_by(JobPosition.id.desc()))
     applications = safe_all(lambda: Application.query.order_by(Application.id.desc()))
     placements = safe_all(lambda: Placement.query.order_by(Placement.id.desc()))
@@ -308,8 +307,8 @@ def admin_portal():
             or search in (student.email or "").lower()
             or search in (student.phone or "").lower()
         ]
-        companies = [
-            company for company in companies
+        all_companies = [
+            company for company in all_companies
             if search in str(company.id)
             or search in (company.name or "").lower()
             or search in (company.email or "").lower()
@@ -317,14 +316,17 @@ def admin_portal():
             or search in (company.location or "").lower()
         ]
 
-    blacklisted_count = sum(1 for company in companies if company.is_blacklisted)
-    approved_companies_count = sum(1 for company in companies if company.is_approved)
+    companies = [company for company in all_companies if not company.is_blacklisted]
+    blacklisted_companies = [company for company in all_companies if company.is_blacklisted]
+
+    blacklisted_count = len(blacklisted_companies)
+    approved_companies_count = sum(1 for company in all_companies if company.is_approved)
 
     total_students = len(students)
     active_students_count = sum(1 for student in students if not student.is_deactivated)
     deactivated_students_count = total_students - active_students_count
 
-    total_companies = len(companies)
+    total_companies = len(all_companies)
     pending_companies_count = max(total_companies - approved_companies_count, 0)
 
     total_jobs = len(job_positions)
@@ -602,9 +604,10 @@ def admin_portal():
     }
 
     return render_template(
-        'admin.html',
+        template_name,
         students=students,
         companies=companies,
+        blacklisted_companies=blacklisted_companies,
         job_positions=job_positions,
         applications=applications,
         placements=placements,
@@ -612,7 +615,55 @@ def admin_portal():
         approved_companies_count=approved_companies_count,
         admin_analytics=admin_analytics,
         search=search,
+        active_page=active_page,
     )
+
+
+def redirect_back_to_admin(default_endpoint="admin_portal"):
+    referrer = request.referrer or ""
+    if referrer:
+        return redirect(referrer)
+    return redirect(url_for(default_endpoint))
+
+
+@app.route('/admin-portal')
+def admin_portal():
+    return render_admin_portal_page("admin_overview.html", "overview")
+
+
+@app.route('/admin-portal/analytics')
+def admin_portal_analytics():
+    return render_admin_portal_page("admin_analytics.html", "analytics")
+
+
+@app.route('/admin-portal/students')
+def admin_portal_students():
+    return render_admin_portal_page("admin_students.html", "students")
+
+
+@app.route('/admin-portal/companies')
+def admin_portal_companies():
+    return render_admin_portal_page("admin_companies.html", "companies")
+
+
+@app.route('/admin-portal/blacklisted-companies')
+def admin_portal_blacklisted_companies():
+    return render_admin_portal_page("admin_blacklisted_companies.html", "blacklisted_companies")
+
+
+@app.route('/admin-portal/job-positions')
+def admin_portal_job_positions():
+    return render_admin_portal_page("admin_job_positions.html", "job_positions")
+
+
+@app.route('/admin-portal/applications')
+def admin_portal_applications():
+    return render_admin_portal_page("admin_applications.html", "applications")
+
+
+@app.route('/admin-portal/placements')
+def admin_portal_placements():
+    return render_admin_portal_page("admin_placements.html", "placements")
 
 
 @app.route('/admin/student/add', methods=['POST'])
@@ -620,7 +671,7 @@ def admin_add_student():
     if 'admin_id' not in session:
         return redirect(url_for("access"))
     flash("Manual add is disabled. Students must register through the registration page.", "warning")
-    return redirect(url_for("admin_portal"))
+    return redirect_back_to_admin()
 
 
 @app.route('/admin/student/<int:student_id>/remove', methods=['POST'])
@@ -634,7 +685,7 @@ def admin_remove_student(student_id):
         db.session.commit()
         flash("Student removed.", "info")
 
-    return redirect(url_for("admin_portal"))
+    return redirect_back_to_admin()
 
 
 @app.route('/admin/student/<int:student_id>/edit', methods=['POST'])
@@ -660,7 +711,7 @@ def admin_edit_student(student_id):
     student.graduation_year = graduation_year
     db.session.commit()
     flash("Student details updated.", "success")
-    return redirect(url_for("admin_portal"))
+    return redirect_back_to_admin()
 
 
 @app.route('/admin/student/<int:student_id>/deactivate', methods=['POST'])
@@ -674,7 +725,7 @@ def deactivate_student(student_id):
         db.session.commit()
         flash("Student deactivated.", "warning")
 
-    return redirect(url_for("admin_portal"))
+    return redirect_back_to_admin()
 
 
 @app.route('/admin/student/<int:student_id>/activate', methods=['POST'])
@@ -688,7 +739,7 @@ def activate_student(student_id):
         db.session.commit()
         flash("Student activated.", "success")
 
-    return redirect(url_for("admin_portal"))
+    return redirect_back_to_admin()
 
 
 @app.route('/admin/company/add', methods=['POST'])
@@ -696,7 +747,7 @@ def admin_add_company():
     if 'admin_id' not in session:
         return redirect(url_for("access"))
     flash("Manual add is disabled. Companies must register through the registration page.", "warning")
-    return redirect(url_for("admin_portal"))
+    return redirect_back_to_admin()
 
 
 @app.route('/admin/company/<int:company_id>/remove', methods=['POST'])
@@ -710,7 +761,7 @@ def admin_remove_company(company_id):
         db.session.commit()
         flash("Company removed.", "info")
 
-    return redirect(url_for("admin_portal"))
+    return redirect_back_to_admin()
 
 
 @app.route('/admin/company/<int:company_id>/edit', methods=['POST'])
@@ -731,7 +782,7 @@ def admin_edit_company(company_id):
     company.website = website
     db.session.commit()
     flash("Company details updated.", "success")
-    return redirect(url_for("admin_portal"))
+    return redirect_back_to_admin()
 
 
 @app.route('/admin/company/<int:company_id>/blacklist', methods=['POST'])
@@ -745,7 +796,7 @@ def blacklist_company(company_id):
         db.session.commit()
         flash("Company blacklisted.", "warning")
 
-    return redirect(url_for("admin_portal"))
+    return redirect_back_to_admin()
 
 
 @app.route('/admin/company/<int:company_id>/allow', methods=['POST'])
@@ -759,7 +810,7 @@ def allow_company(company_id):
         db.session.commit()
         flash("Company allowed again.", "success")
 
-    return redirect(url_for("admin_portal"))
+    return redirect_back_to_admin()
 
 
 @app.route('/admin/company/<int:company_id>/approve', methods=['POST'])
@@ -773,7 +824,7 @@ def approve_company(company_id):
         db.session.commit()
         flash("Company approved.", "success")
 
-    return redirect(url_for("admin_portal"))
+    return redirect_back_to_admin()
 
 
 @app.route('/admin/company/<int:company_id>/reject', methods=['POST'])
@@ -787,7 +838,7 @@ def reject_company(company_id):
         db.session.commit()
         flash("Company set to not approved.", "warning")
 
-    return redirect(url_for("admin_portal"))
+    return redirect_back_to_admin()
 
 
 @app.route('/admin/job/<int:job_id>/approve', methods=['POST'])
@@ -802,7 +853,7 @@ def approve_job(job_id):
         db.session.commit()
         flash("Placement drive approved.", "success")
 
-    return redirect(url_for("admin_portal"))
+    return redirect_back_to_admin()
 
 
 @app.route('/admin/job/<int:job_id>/reject', methods=['POST'])
@@ -817,7 +868,7 @@ def reject_job(job_id):
         db.session.commit()
         flash("Placement drive rejected.", "warning")
 
-    return redirect(url_for("admin_portal"))
+    return redirect_back_to_admin()
 
 
 @app.route('/admin/job/<int:job_id>/close', methods=['POST'])
@@ -832,7 +883,7 @@ def close_job(job_id):
         db.session.commit()
         flash("Placement drive closed.", "info")
 
-    return redirect(url_for("admin_portal"))
+    return redirect_back_to_admin()
 
 
 # STUDENT LOGIN
@@ -1584,24 +1635,24 @@ def admin_create_placement():
     
     if not application_id_raw:
         flash("Application ID is required.", "warning")
-        return redirect(url_for("admin_portal"))
+        return redirect_back_to_admin()
     
     try:
         application_id = int(application_id_raw)
     except ValueError:
         flash("Invalid application ID.", "warning")
-        return redirect(url_for("admin_portal"))
+        return redirect_back_to_admin()
     
     application = Application.query.get(application_id)
     if not application:
         flash("Application not found.", "warning")
-        return redirect(url_for("admin_portal"))
+        return redirect_back_to_admin()
     
     # Check if placement already exists
     existing_placement = Placement.query.filter_by(application_id=application_id).first()
     if existing_placement:
         flash("Placement already exists for this application.", "warning")
-        return redirect(url_for("admin_portal"))
+        return redirect_back_to_admin()
     
     offered_package_lpa = None
     if offered_package_raw:
@@ -1625,7 +1676,7 @@ def admin_create_placement():
         db.session.rollback()
         flash("Could not create placement.", "danger")
     
-    return redirect(url_for("admin_portal"))
+    return redirect_back_to_admin()
 
 
 # ADMIN: UPDATE PLACEMENT
@@ -1637,7 +1688,7 @@ def admin_edit_placement(placement_id):
     placement = Placement.query.get(placement_id)
     if not placement:
         flash("Placement not found.", "warning")
-        return redirect(url_for("admin_portal"))
+        return redirect_back_to_admin()
     
     offered_package_raw = request.form.get("offered_package_lpa") or ""
     
@@ -1671,7 +1722,7 @@ def admin_remove_placement(placement_id):
     placement = Placement.query.get(placement_id)
     if not placement:
         flash("Placement not found.", "warning")
-        return redirect(url_for("admin_portal"))
+        return redirect_back_to_admin()
     
     try:
         # Set application status back to selected (not placed)
@@ -1690,7 +1741,7 @@ def admin_remove_placement(placement_id):
         db.session.rollback()
         flash("Could not remove placement.", "danger")
     
-    return redirect(url_for("admin_portal"))
+    return redirect_back_to_admin()
 
 
 if __name__ == "__main__":

@@ -1,0 +1,33 @@
+{% extends 'admin_layout.html' %}
+{% block admin_content %}
+<div class="row g-3 mb-4">
+    <div class="col-6 col-md-3">
+        <div class="card"><div class="card-body"><p class="mb-1 text-muted">Students</p><h2 class="h5 mb-0">{{ students|length }}</h2></div></div>
+    </div>
+    <div class="col-6 col-md-3">
+        <div class="card"><div class="card-body"><p class="mb-1 text-muted">Companies</p><h2 class="h5 mb-0">{{ companies|length }}</h2></div></div>
+    </div>
+    <div class="col-6 col-md-3">
+        <div class="card"><div class="card-body"><p class="mb-1 text-muted">Job Positions</p><h2 class="h5 mb-0">{{ job_positions|length }}</h2></div></div>
+    </div>
+    <div class="col-6 col-md-3">
+        <div class="card"><div class="card-body"><p class="mb-1 text-muted">Applications</p><h2 class="h5 mb-0">{{ applications|length }}</h2></div></div>
+    </div>
+    <div class="col-6 col-md-3">
+        <div class="card"><div class="card-body"><p class="mb-1 text-muted">Blacklisted Companies</p><h2 class="h5 mb-0">{{ blacklisted_count }}</h2></div></div>
+    </div>
+    <div class="col-6 col-md-3">
+        <div class="card"><div class="card-body"><p class="mb-1 text-muted">Approved Companies</p><h2 class="h5 mb-0">{{ approved_companies_count }}</h2></div></div>
+    </div>
+    <div class="col-6 col-md-3">
+        <div class="card"><div class="card-body"><p class="mb-1 text-muted">Placements</p><h2 class="h5 mb-0">{{ placements|length }}</h2></div></div>
+    </div>
+</div>
+
+<div class="card border-0 shadow-sm mb-4">
+    <div class="card-body">
+        <h2 class="h5 mb-2">Admin Overview</h2>
+        <p class="text-muted mb-0">Choose a section from the left sidebar to open a separate page for that table or report.</p>
+    </div>
+</div>
+{% endblock %}

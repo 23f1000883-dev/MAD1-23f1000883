@@ -1,0 +1,91 @@
+{% extends 'admin_layout.html' %}
+{% block admin_content %}
+<section class="mb-4">
+    <h2 class="h5 mb-3">Analytics Overview (Logical Graphs)</h2>
+    <div class="card analytics-card mb-3">
+        <div class="card-body">
+            <h3 class="h6 mb-3">Pie / Donut Summary</h3>
+            <div class="donut-grid">
+                <div class="donut-card">
+                    <p class="small text-muted mb-2">Job Status</p>
+                    <div class="donut-wrap">
+                        <svg viewBox="0 0 42 42" aria-label="Job status donut chart">
+                            <circle cx="21" cy="21" r="15.915" fill="transparent" stroke="#edf1f5" stroke-width="4"></circle>
+                            {% for segment in admin_analytics.donut_job_status.segments %}
+                            <circle cx="21" cy="21" r="15.915" fill="transparent" stroke="{{ segment.color }}" stroke-width="4" stroke-dasharray="{{ segment.dash }} 100" stroke-dashoffset="{{ -segment.offset }}" transform="rotate(-90 21 21)"></circle>
+                            {% endfor %}
+                        </svg>
+                        <div class="donut-center"><div class="donut-total">{{ admin_analytics.donut_job_status.total }}</div><div class="donut-caption">Total Jobs</div></div>
+                    </div>
+                    {% for segment in admin_analytics.donut_job_status.segments %}
+                    <div class="donut-legend-item"><span><span class="legend-dot {{ segment.dot_class }}"></span>{{ segment.label }}</span><span class="fw-semibold">{{ segment.count }} ({{ segment.percent }}%)</span></div>
+                    {% else %}<p class="small text-muted mb-0">No job data available.</p>{% endfor %}
+                </div>
+                <div class="donut-card">
+                    <p class="small text-muted mb-2">Application Status</p>
+                    <div class="donut-wrap">
+                        <svg viewBox="0 0 42 42" aria-label="Application status donut chart">
+                            <circle cx="21" cy="21" r="15.915" fill="transparent" stroke="#edf1f5" stroke-width="4"></circle>
+                            {% for segment in admin_analytics.donut_application_status.segments %}
+                            <circle cx="21" cy="21" r="15.915" fill="transparent" stroke="{{ segment.color }}" stroke-width="4" stroke-dasharray="{{ segment.dash }} 100" stroke-dashoffset="{{ -segment.offset }}" transform="rotate(-90 21 21)"></circle>
+                            {% endfor %}
+                        </svg>
+                        <div class="donut-center"><div class="donut-total">{{ admin_analytics.donut_application_status.total }}</div><div class="donut-caption">Applications</div></div>
+                    </div>
+                    {% for segment in admin_analytics.donut_application_status.segments %}
+                    <div class="donut-legend-item"><span><span class="legend-dot {{ segment.dot_class }}"></span>{{ segment.label }}</span><span class="fw-semibold">{{ segment.count }} ({{ segment.percent }}%)</span></div>
+                    {% else %}<p class="small text-muted mb-0">No application data available.</p>{% endfor %}
+                </div>
+                <div class="donut-card">
+                    <p class="small text-muted mb-2">Company Information</p>
+                    <div class="donut-wrap">
+                        <svg viewBox="0 0 42 42" aria-label="Company status donut chart">
+                            <circle cx="21" cy="21" r="15.915" fill="transparent" stroke="#edf1f5" stroke-width="4"></circle>
+                            {% for segment in admin_analytics.donut_company_status.segments %}
+                            <circle cx="21" cy="21" r="15.915" fill="transparent" stroke="{{ segment.color }}" stroke-width="4" stroke-dasharray="{{ segment.dash }} 100" stroke-dashoffset="{{ -segment.offset }}" transform="rotate(-90 21 21)"></circle>
+                            {% endfor %}
+                        </svg>
+                        <div class="donut-center"><div class="donut-total">{{ admin_analytics.donut_company_status.total }}</div><div class="donut-caption">Companies</div></div>
+                    </div>
+                    {% for segment in admin_analytics.donut_company_status.segments %}
+                    <div class="donut-legend-item"><span><span class="legend-dot {{ segment.dot_class }}"></span>{{ segment.label }}</span><span class="fw-semibold">{{ segment.count }} ({{ segment.percent }}%)</span></div>
+                    {% else %}<p class="small text-muted mb-0">No company data available.</p>{% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<div class="row g-3">
+    <div class="col-12 col-xl-6">
+        <div class="card analytics-card h-100"><div class="card-body">
+            <h3 class="h6 mb-3">Student & Company Information</h3>
+            <p class="small text-muted mb-1">Student activity</p>
+            <div class="segment-track mb-1" aria-label="Student activity">
+                {% for i in range(20) %}<span class="segment-block {% if i < admin_analytics.students.active_units %}active-success{% elif i < admin_analytics.students.active_units + admin_analytics.students.deactivated_units %}active-secondary{% endif %}"></span>{% endfor %}
+            </div>
+            <p class="small text-muted mb-3">Active {{ admin_analytics.students.active }} | Deactivated {{ admin_analytics.students.deactivated }}</p>
+            <p class="small text-muted mb-1">Company approval / pending / blacklist</p>
+            <div class="segment-track mb-1" aria-label="Company status">
+                {% for i in range(20) %}<span class="segment-block {% if i < admin_analytics.companies.approved_units %}active-success{% elif i < admin_analytics.companies.approved_units + admin_analytics.companies.pending_units %}active-warning{% elif i < admin_analytics.companies.approved_units + admin_analytics.companies.pending_units + admin_analytics.companies.blacklisted_units %}active-danger{% endif %}"></span>{% endfor %}
+            </div>
+            <p class="small text-muted mb-0">Approved {{ admin_analytics.companies.approved }} | Pending {{ admin_analytics.companies.pending }} | Blacklisted {{ admin_analytics.companies.blacklisted }}</p>
+        </div></div>
+    </div>
+    <div class="col-12 col-xl-6">
+        <div class="card analytics-card h-100"><div class="card-body">
+            <h3 class="h6 mb-3">Monthly Trend</h3>
+            <div class="border rounded p-2 bg-light-subtle">
+                {% for point in admin_analytics.monthly_trend %}
+                <div class="trend-row mb-1 d-flex align-items-center gap-2">
+                    <span class="text-muted" style="min-width: 62px;">{{ point.label[:3] }}</span>
+                    <span class="text-primary">{% for i in range(point.applications_units) %}▮{% endfor %}</span>
+                    <span class="text-success">{% for i in range(point.placements_units) %}▮{% endfor %}</span>
+                    <span class="small text-muted ms-auto">A: {{ point.applications }} | P: {{ point.placements }}</span>
+                </div>
+                {% endfor %}
+            </div>
+        </div></div>
+    </div>
+</div>
+{% endblock %}

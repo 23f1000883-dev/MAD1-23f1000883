@@ -1,0 +1,49 @@
+{% extends 'admin_layout.html' %}
+{% block admin_content %}
+<section class="mb-4">
+    <h2 class="h5">Students</h2>
+    <div class="table-responsive">
+        <table class="table table-bordered table-sm align-middle">
+            <thead class="table-light">
+                <tr>
+                    <th>ID</th><th>Full Name</th><th>Email</th><th>Phone</th><th>Course</th><th>Skills</th><th>Graduation Year</th><th>Status</th><th>Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for student in students %}
+                <tr>
+                    <td>{{ student.id }}</td>
+                    <td>{{ student.full_name }}</td>
+                    <td>{{ student.email }}</td>
+                    <td>{{ student.phone or 'N/A' }}</td>
+                    <td>{{ student.course or 'N/A' }}</td>
+                    <td>{{ student.skills or 'N/A' }}</td>
+                    <td>{{ student.graduation_year or 'N/A' }}</td>
+                    <td>{% if student.is_deactivated %}<span class="badge bg-secondary">Deactivated</span>{% else %}<span class="badge bg-success">Active</span>{% endif %}</td>
+                    <td>
+                        <div class="d-flex flex-wrap gap-2">
+                            <form method="POST" action="{{ url_for('admin_edit_student', student_id=student.id) }}" class="row g-1">
+                                <div class="col-12"><input name="full_name" class="form-control form-control-sm" value="{{ student.full_name }}" required></div>
+                                <div class="col-12"><input name="phone" class="form-control form-control-sm" value="{{ student.phone or '' }}" placeholder="Phone"></div>
+                                <div class="col-12"><input name="course" class="form-control form-control-sm" value="{{ student.course or '' }}" placeholder="Course"></div>
+                                <div class="col-12"><input name="skills" class="form-control form-control-sm" value="{{ student.skills or '' }}" placeholder="Skills"></div>
+                                <div class="col-12"><input name="graduation_year" class="form-control form-control-sm" value="{{ student.graduation_year or '' }}" placeholder="Graduation Year"></div>
+                                <div class="col-12"><button type="submit" class="btn btn-primary btn-sm">Edit</button></div>
+                            </form>
+                            {% if student.is_deactivated %}
+                            <form method="POST" action="{{ url_for('activate_student', student_id=student.id) }}"><button type="submit" class="btn btn-success btn-sm">Activate</button></form>
+                            {% else %}
+                            <form method="POST" action="{{ url_for('deactivate_student', student_id=student.id) }}"><button type="submit" class="btn btn-warning btn-sm">Deactivate</button></form>
+                            {% endif %}
+                            <form method="POST" action="{{ url_for('admin_remove_student', student_id=student.id) }}"><button type="submit" class="btn btn-outline-danger btn-sm">Remove</button></form>
+                        </div>
+                    </td>
+                </tr>
+                {% else %}
+                <tr><td colspan="9" class="text-center">No students found</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</section>
+{% endblock %}

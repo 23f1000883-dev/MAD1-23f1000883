@@ -1,0 +1,40 @@
+{% extends 'admin_layout.html' %}
+{% block admin_content %}
+<section class="mb-4">
+    <h2 class="h5">Job Positions</h2>
+    <div class="table-responsive">
+        <table class="table table-bordered table-sm align-middle">
+            <thead class="table-light">
+                <tr>
+                    <th>ID</th><th>Company</th><th>Title</th><th>Status</th><th>Location</th><th>Salary (LPA)</th><th>Skills</th><th>Experience</th><th>Active</th><th>Posted At</th><th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for position in job_positions %}
+                <tr>
+                    <td>{{ position.id }}</td>
+                    <td>{{ position.company.name }}</td>
+                    <td>{{ position.title }}</td>
+                    <td>{{ position.status }}</td>
+                    <td>{{ position.location or 'N/A' }}</td>
+                    <td>{{ position.salary_lpa or 'N/A' }}</td>
+                    <td>{{ position.required_skills or 'N/A' }}</td>
+                    <td>{{ position.experience_required or 'N/A' }}</td>
+                    <td>{{ 'Yes' if position.is_active else 'No' }}</td>
+                    <td>{{ position.posted_at.strftime('%Y-%m-%d %H:%M') if position.posted_at else 'N/A' }}</td>
+                    <td>
+                        <div class="d-flex flex-wrap gap-2">
+                            <form method="POST" action="{{ url_for('approve_job', job_id=position.id) }}"><button type="submit" class="btn btn-success btn-sm">Approve</button></form>
+                            <form method="POST" action="{{ url_for('reject_job', job_id=position.id) }}"><button type="submit" class="btn btn-warning btn-sm">Reject</button></form>
+                            <form method="POST" action="{{ url_for('close_job', job_id=position.id) }}"><button type="submit" class="btn btn-secondary btn-sm">Close</button></form>
+                        </div>
+                    </td>
+                </tr>
+                {% else %}
+                <tr><td colspan="11" class="text-center">No job positions found</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</section>
+{% endblock %}
