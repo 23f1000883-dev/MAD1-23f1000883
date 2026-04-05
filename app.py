@@ -5,6 +5,7 @@ from werkzeug.utils import secure_filename
 from sqlalchemy import text
 from sqlalchemy.exc import OperationalError
 from datetime import datetime
+from collections import Counter
 import os
 from uuid import uuid4
 
@@ -319,6 +320,287 @@ def admin_portal():
     blacklisted_count = sum(1 for company in companies if company.is_blacklisted)
     approved_companies_count = sum(1 for company in companies if company.is_approved)
 
+    total_students = len(students)
+    active_students_count = sum(1 for student in students if not student.is_deactivated)
+    deactivated_students_count = total_students - active_students_count
+
+    total_companies = len(companies)
+    pending_companies_count = max(total_companies - approved_companies_count, 0)
+
+    total_jobs = len(job_positions)
+    total_applications = len(applications)
+    total_placements = len(placements)
+
+    def percentage(part, whole):
+        if whole <= 0:
+            return 0
+        return round((part / whole) * 100, 1)
+
+    def units_from_percent(percent, max_units=20):
+        if percent <= 0:
+            return 0
+        return max(1, min(max_units, int(round((percent / 100) * max_units))))
+
+    color_by_bar_class = {
+        "bg-primary": "#0d6efd",
+        "bg-success": "#198754",
+        "bg-warning": "#ffc107",
+        "bg-danger": "#dc3545",
+        "bg-secondary": "#6c757d",
+        "bg-info": "#0dcaf0",
+    }
+    dot_class_by_bar_class = {
+        "bg-primary": "dot-primary",
+        "bg-success": "dot-success",
+        "bg-warning": "dot-warning",
+        "bg-danger": "dot-danger",
+        "bg-secondary": "dot-secondary",
+        "bg-info": "dot-info",
+    }
+
+    def build_donut_chart(items):
+        segments = []
+        offset = 0.0
+
+        for item in items:
+            count = item.get("count", 0)
+            percent = float(item.get("percent", 0) or 0)
+            if count <= 0 or percent <= 0:
+                continue
+
+            segments.append(
+                {
+                    "label": item.get("label", ""),
+                    "count": count,
+                    "percent": percent,
+                    "dash": round(percent, 2),
+                    "offset": round(offset, 2),
+                    "color": color_by_bar_class.get(item.get("bar_class", ""), "#0d6efd"),
+                    "dot_class": dot_class_by_bar_class.get(item.get("bar_class", ""), "dot-primary"),
+                }
+            )
+            offset += percent
+
+        return segments
+
+    job_status_counts = Counter((position.status or "pending").lower() for position in job_positions)
+    job_status_chart = [
+        {
+            "label": "Approved",
+            "count": job_status_counts.get("approved", 0),
+            "percent": percentage(job_status_counts.get("approved", 0), total_jobs),
+            "bar_class": "bg-success",
+        },
+        {
+            "label": "Pending",
+            "count": job_status_counts.get("pending", 0),
+            "percent": percentage(job_status_counts.get("pending", 0), total_jobs),
+            "bar_class": "bg-warning",
+        },
+        {
+            "label": "Rejected",
+            "count": job_status_counts.get("rejected", 0),
+            "percent": percentage(job_status_counts.get("rejected", 0), total_jobs),
+            "bar_class": "bg-danger",
+        },
+        {
+            "label": "Closed",
+            "count": job_status_counts.get("closed", 0),
+            "percent": percentage(job_status_counts.get("closed", 0), total_jobs),
+            "bar_class": "bg-secondary",
+        },
+    ]
+    for item in job_status_chart:
+        item["units"] = units_from_percent(item["percent"], 20)
+
+    application_status_counts = Counter((application.status or "applied").lower() for application in applications)
+    application_status_chart = [
+        {
+            "label": "Applied",
+            "count": application_status_counts.get("applied", 0),
+            "percent": percentage(application_status_counts.get("applied", 0), total_applications),
+            "bar_class": "bg-primary",
+        },
+        {
+            "label": "Shortlisted",
+            "count": application_status_counts.get("shortlisted", 0),
+            "percent": percentage(application_status_counts.get("shortlisted", 0), total_applications),
+            "bar_class": "bg-info",
+        },
+        {
+            "label": "Interview",
+            "count": application_status_counts.get("interview", 0),
+            "percent": percentage(application_status_counts.get("interview", 0), total_applications),
+            "bar_class": "bg-warning",
+        },
+        {
+            "label": "Selected",
+            "count": application_status_counts.get("selected", 0),
+            "percent": percentage(application_status_counts.get("selected", 0), total_applications),
+            "bar_class": "bg-success",
+        },
+        {
+            "label": "Rejected",
+            "count": application_status_counts.get("rejected", 0),
+            "percent": percentage(application_status_counts.get("rejected", 0), total_applications),
+            "bar_class": "bg-danger",
+        },
+    ]
+    for item in application_status_chart:
+        item["units"] = units_from_percent(item["percent"], 20)
+
+    course_counts = Counter(((student.course or "Unknown").strip() or "Unknown") for student in students)
+    top_courses = course_counts.most_common(6)
+    max_course_count = top_courses[0][1] if top_courses else 1
+    top_course_chart = [
+        {
+            "label": course,
+            "count": count,
+            "percent": percentage(count, max_course_count),
+        }
+        for course, count in top_courses
+    ]
+    for item in top_course_chart:
+        item["units"] = units_from_percent(item["percent"], 20)
+
+    company_drive_counts = Counter(
+        (position.company.name if position.company else "Unknown")
+        for position in job_positions
+    )
+    top_hiring_companies = company_drive_counts.most_common(5)
+    max_company_drive_count = top_hiring_companies[0][1] if top_hiring_companies else 1
+    top_hiring_chart = [
+        {
+            "label": company_name,
+            "count": count,
+            "percent": percentage(count, max_company_drive_count),
+        }
+        for company_name, count in top_hiring_companies
+    ]
+    for item in top_hiring_chart:
+        item["units"] = units_from_percent(item["percent"], 20)
+
+    today = datetime.utcnow().date()
+    current_month_index = today.year * 12 + today.month
+    monthly_trend = []
+
+    for offset in range(5, -1, -1):
+        month_index = current_month_index - offset
+        year = (month_index - 1) // 12
+        month = (month_index - 1) % 12 + 1
+        month_label = datetime(year, month, 1).strftime("%b %Y")
+
+        month_applications = sum(
+            1
+            for application in applications
+            if application.applied_at
+            and application.applied_at.year == year
+            and application.applied_at.month == month
+        )
+        month_placements = sum(
+            1
+            for placement in placements
+            if placement.placed_at
+            and placement.placed_at.year == year
+            and placement.placed_at.month == month
+        )
+
+        monthly_trend.append(
+            {
+                "label": month_label,
+                "applications": month_applications,
+                "placements": month_placements,
+            }
+        )
+
+    max_trend_value = max(
+        [item["applications"] for item in monthly_trend] + [item["placements"] for item in monthly_trend],
+        default=1,
+    )
+    for item in monthly_trend:
+        item["applications_percent"] = percentage(item["applications"], max_trend_value)
+        item["placements_percent"] = percentage(item["placements"], max_trend_value)
+        item["applications_units"] = units_from_percent(item["applications_percent"], 12)
+        item["placements_units"] = units_from_percent(item["placements_percent"], 12)
+
+    placement_rate_percent = percentage(total_placements, total_applications)
+    placement_rate_units = units_from_percent(placement_rate_percent, 20)
+
+    student_active_percent = percentage(active_students_count, total_students)
+    student_deactivated_percent = percentage(deactivated_students_count, total_students)
+    student_active_units = units_from_percent(student_active_percent, 20)
+    student_deactivated_units = units_from_percent(student_deactivated_percent, 20)
+
+    company_approved_percent = percentage(approved_companies_count, total_companies)
+    company_pending_percent = percentage(pending_companies_count, total_companies)
+    company_blacklisted_percent = percentage(blacklisted_count, total_companies)
+    company_approved_units = units_from_percent(company_approved_percent, 20)
+    company_pending_units = units_from_percent(company_pending_percent, 20)
+    company_blacklisted_units = units_from_percent(company_blacklisted_percent, 20)
+
+    company_status_chart = [
+        {
+            "label": "Approved",
+            "count": approved_companies_count,
+            "percent": company_approved_percent,
+            "bar_class": "bg-success",
+        },
+        {
+            "label": "Pending",
+            "count": pending_companies_count,
+            "percent": company_pending_percent,
+            "bar_class": "bg-warning",
+        },
+        {
+            "label": "Blacklisted",
+            "count": blacklisted_count,
+            "percent": company_blacklisted_percent,
+            "bar_class": "bg-danger",
+        },
+    ]
+
+    admin_analytics = {
+        "students": {
+            "active": active_students_count,
+            "deactivated": deactivated_students_count,
+            "active_percent": student_active_percent,
+            "deactivated_percent": student_deactivated_percent,
+            "active_units": student_active_units,
+            "deactivated_units": student_deactivated_units,
+        },
+        "companies": {
+            "approved": approved_companies_count,
+            "pending": pending_companies_count,
+            "blacklisted": blacklisted_count,
+            "approved_percent": company_approved_percent,
+            "pending_percent": company_pending_percent,
+            "blacklisted_percent": company_blacklisted_percent,
+            "approved_units": company_approved_units,
+            "pending_units": company_pending_units,
+            "blacklisted_units": company_blacklisted_units,
+        },
+        "placement_rate_percent": placement_rate_percent,
+        "placement_rate_units": placement_rate_units,
+        "job_status_chart": job_status_chart,
+        "application_status_chart": application_status_chart,
+        "company_status_chart": company_status_chart,
+        "donut_job_status": {
+            "total": total_jobs,
+            "segments": build_donut_chart(job_status_chart),
+        },
+        "donut_application_status": {
+            "total": total_applications,
+            "segments": build_donut_chart(application_status_chart),
+        },
+        "donut_company_status": {
+            "total": total_companies,
+            "segments": build_donut_chart(company_status_chart),
+        },
+        "top_course_chart": top_course_chart,
+        "top_hiring_chart": top_hiring_chart,
+        "monthly_trend": monthly_trend,
+    }
+
     return render_template(
         'admin.html',
         students=students,
@@ -328,6 +610,7 @@ def admin_portal():
         placements=placements,
         blacklisted_count=blacklisted_count,
         approved_companies_count=approved_companies_count,
+        admin_analytics=admin_analytics,
         search=search,
     )
 

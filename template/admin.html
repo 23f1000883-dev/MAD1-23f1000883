@@ -4,7 +4,103 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Admin Portal</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-sRIl4kxILFvY47J16cr9ZwB07vP4J8+LH7qKQnuqkuIAvNWLzeN8tE5YBujZqJLB" crossorigin="anonymous">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        .analytics-card {
+            border: 1px solid #e9ecef;
+            border-radius: 0.9rem;
+        }
+        .bar-row-label {
+            min-width: 90px;
+        }
+        .segment-track {
+            display: flex;
+            align-items: center;
+            gap: 0.15rem;
+            flex-wrap: nowrap;
+        }
+        .segment-block {
+            width: 10px;
+            height: 10px;
+            border-radius: 0.2rem;
+            background: #e9ecef;
+            border: 1px solid #dde3ea;
+        }
+        .segment-block.active-primary { background: #0d6efd; border-color: #0d6efd; }
+        .segment-block.active-success { background: #198754; border-color: #198754; }
+        .segment-block.active-warning { background: #ffc107; border-color: #ffc107; }
+        .segment-block.active-danger { background: #dc3545; border-color: #dc3545; }
+        .segment-block.active-secondary { background: #6c757d; border-color: #6c757d; }
+        .segment-block.active-info { background: #0dcaf0; border-color: #0dcaf0; }
+        .trend-row {
+            font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+            font-size: 0.78rem;
+            letter-spacing: 0.02em;
+        }
+        .legend-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            display: inline-block;
+            margin-right: 0.35rem;
+        }
+        .dot-primary { background-color: #0d6efd; }
+        .dot-success { background-color: #198754; }
+        .dot-warning { background-color: #ffc107; }
+        .dot-danger { background-color: #dc3545; }
+        .dot-secondary { background-color: #6c757d; }
+        .dot-info { background-color: #0dcaf0; }
+        .donut-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 1rem;
+        }
+        .donut-card {
+            border: 1px solid #e9ecef;
+            border-radius: 0.9rem;
+            padding: 0.9rem;
+            background: #fff;
+        }
+        .donut-wrap {
+            width: 150px;
+            height: 150px;
+            position: relative;
+            margin: 0 auto 0.75rem auto;
+        }
+        .donut-wrap svg {
+            width: 100%;
+            height: 100%;
+            display: block;
+        }
+        .donut-center {
+            position: absolute;
+            inset: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+            pointer-events: none;
+        }
+        .donut-total {
+            font-size: 1.25rem;
+            font-weight: 700;
+            line-height: 1;
+        }
+        .donut-caption {
+            font-size: 0.72rem;
+            color: #6c757d;
+            text-transform: uppercase;
+            letter-spacing: 0.03em;
+        }
+        .donut-legend-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 0.5rem;
+            font-size: 0.82rem;
+            margin-bottom: 0.25rem;
+        }
+    </style>
 </head>
 <body class="bg-light">
     <div class="container py-4">
@@ -84,6 +180,223 @@
                 </div>
             </div>
         </div>
+
+        <section class="mb-4">
+            <h2 class="h5 mb-3">Analytics Overview (Logical Graphs)</h2>
+            <div class="card analytics-card mb-3">
+                <div class="card-body">
+                    <h3 class="h6 mb-3">Pie / Donut Summary</h3>
+                    <div class="donut-grid">
+                        <div class="donut-card">
+                            <p class="small text-muted mb-2">Job Status</p>
+                            <div class="donut-wrap">
+                                <svg viewBox="0 0 42 42" aria-label="Job status donut chart">
+                                    <circle cx="21" cy="21" r="15.915" fill="transparent" stroke="#edf1f5" stroke-width="4"></circle>
+                                    {% for segment in admin_analytics.donut_job_status.segments %}
+                                    <circle cx="21" cy="21" r="15.915" fill="transparent" stroke="{{ segment.color }}" stroke-width="4" stroke-dasharray="{{ segment.dash }} 100" stroke-dashoffset="{{ -segment.offset }}" transform="rotate(-90 21 21)"></circle>
+                                    {% endfor %}
+                                </svg>
+                                <div class="donut-center">
+                                    <div class="donut-total">{{ admin_analytics.donut_job_status.total }}</div>
+                                    <div class="donut-caption">Total Jobs</div>
+                                </div>
+                            </div>
+                            {% for segment in admin_analytics.donut_job_status.segments %}
+                            <div class="donut-legend-item">
+                                <span><span class="legend-dot {{ segment.dot_class }}"></span>{{ segment.label }}</span>
+                                <span class="fw-semibold">{{ segment.count }} ({{ segment.percent }}%)</span>
+                            </div>
+                            {% else %}
+                            <p class="small text-muted mb-0">No job data available.</p>
+                            {% endfor %}
+                        </div>
+
+                        <div class="donut-card">
+                            <p class="small text-muted mb-2">Application Status</p>
+                            <div class="donut-wrap">
+                                <svg viewBox="0 0 42 42" aria-label="Application status donut chart">
+                                    <circle cx="21" cy="21" r="15.915" fill="transparent" stroke="#edf1f5" stroke-width="4"></circle>
+                                    {% for segment in admin_analytics.donut_application_status.segments %}
+                                    <circle cx="21" cy="21" r="15.915" fill="transparent" stroke="{{ segment.color }}" stroke-width="4" stroke-dasharray="{{ segment.dash }} 100" stroke-dashoffset="{{ -segment.offset }}" transform="rotate(-90 21 21)"></circle>
+                                    {% endfor %}
+                                </svg>
+                                <div class="donut-center">
+                                    <div class="donut-total">{{ admin_analytics.donut_application_status.total }}</div>
+                                    <div class="donut-caption">Applications</div>
+                                </div>
+                            </div>
+                            {% for segment in admin_analytics.donut_application_status.segments %}
+                            <div class="donut-legend-item">
+                                <span><span class="legend-dot {{ segment.dot_class }}"></span>{{ segment.label }}</span>
+                                <span class="fw-semibold">{{ segment.count }} ({{ segment.percent }}%)</span>
+                            </div>
+                            {% else %}
+                            <p class="small text-muted mb-0">No application data available.</p>
+                            {% endfor %}
+                        </div>
+
+                        <div class="donut-card">
+                            <p class="small text-muted mb-2">Company Health</p>
+                            <div class="donut-wrap">
+                                <svg viewBox="0 0 42 42" aria-label="Company status donut chart">
+                                    <circle cx="21" cy="21" r="15.915" fill="transparent" stroke="#edf1f5" stroke-width="4"></circle>
+                                    {% for segment in admin_analytics.donut_company_status.segments %}
+                                    <circle cx="21" cy="21" r="15.915" fill="transparent" stroke="{{ segment.color }}" stroke-width="4" stroke-dasharray="{{ segment.dash }} 100" stroke-dashoffset="{{ -segment.offset }}" transform="rotate(-90 21 21)"></circle>
+                                    {% endfor %}
+                                </svg>
+                                <div class="donut-center">
+                                    <div class="donut-total">{{ admin_analytics.donut_company_status.total }}</div>
+                                    <div class="donut-caption">Companies</div>
+                                </div>
+                            </div>
+                            {% for segment in admin_analytics.donut_company_status.segments %}
+                            <div class="donut-legend-item">
+                                <span><span class="legend-dot {{ segment.dot_class }}"></span>{{ segment.label }}</span>
+                                <span class="fw-semibold">{{ segment.count }} ({{ segment.percent }}%)</span>
+                            </div>
+                            {% else %}
+                            <p class="small text-muted mb-0">No company data available.</p>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row g-3">
+                <div class="col-12 col-xl-6">
+                    <div class="card analytics-card h-100">
+                        <div class="card-body">
+                            <h3 class="h6 mb-3">Job Status Distribution</h3>
+                            {% for item in admin_analytics.job_status_chart %}
+                            <div class="d-flex align-items-center gap-2 mb-2">
+                                <span class="bar-row-label small text-muted">{{ item.label }}</span>
+                                <div class="segment-track flex-grow-1" aria-label="{{ item.label }}">
+                                    {% for i in range(20) %}
+                                    <span class="segment-block {% if i < item.units %}{% if item.bar_class == 'bg-success' %}active-success{% elif item.bar_class == 'bg-warning' %}active-warning{% elif item.bar_class == 'bg-danger' %}active-danger{% elif item.bar_class == 'bg-secondary' %}active-secondary{% else %}active-primary{% endif %}{% endif %}"></span>
+                                    {% endfor %}
+                                </div>
+                                <span class="small fw-semibold">{{ item.count }}</span>
+                            </div>
+                            {% endfor %}
+
+                            <hr>
+                            <h3 class="h6 mb-3">Application Funnel</h3>
+                            {% for item in admin_analytics.application_status_chart %}
+                            <div class="d-flex align-items-center gap-2 mb-2">
+                                <span class="bar-row-label small text-muted">{{ item.label }}</span>
+                                <div class="segment-track flex-grow-1" aria-label="{{ item.label }}">
+                                    {% for i in range(20) %}
+                                    <span class="segment-block {% if i < item.units %}{% if item.bar_class == 'bg-success' %}active-success{% elif item.bar_class == 'bg-warning' %}active-warning{% elif item.bar_class == 'bg-danger' %}active-danger{% elif item.bar_class == 'bg-info' %}active-info{% elif item.bar_class == 'bg-secondary' %}active-secondary{% else %}active-primary{% endif %}{% endif %}"></span>
+                                    {% endfor %}
+                                </div>
+                                <span class="small fw-semibold">{{ item.count }}</span>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-12 col-xl-6">
+                    <div class="card analytics-card h-100">
+                        <div class="card-body">
+                            <h3 class="h6 mb-3">Monthly Trend (Last 6 Months)</h3>
+                            <div class="d-flex align-items-center gap-3 small text-muted mb-2">
+                                <span><span class="legend-dot bg-primary"></span>Applications</span>
+                                <span><span class="legend-dot bg-success"></span>Placements</span>
+                            </div>
+
+                            <div class="border rounded p-2 bg-light-subtle">
+                                {% for point in admin_analytics.monthly_trend %}
+                                <div class="trend-row mb-1 d-flex align-items-center gap-2">
+                                    <span class="text-muted" style="min-width: 62px;">{{ point.label[:3] }}</span>
+                                    <span class="text-primary">
+                                        {% for i in range(point.applications_units) %}▮{% endfor %}
+                                    </span>
+                                    <span class="text-success">
+                                        {% for i in range(point.placements_units) %}▮{% endfor %}
+                                    </span>
+                                    <span class="small text-muted ms-auto">A: {{ point.applications }} | P: {{ point.placements }}</span>
+                                </div>
+                                {% endfor %}
+                            </div>
+
+                            <div class="mt-3">
+                                <p class="mb-1 small text-muted">Placement conversion rate</p>
+                                <div class="segment-track" aria-label="Placement conversion">
+                                    {% for i in range(20) %}
+                                    <span class="segment-block {% if i < admin_analytics.placement_rate_units %}active-success{% endif %}"></span>
+                                    {% endfor %}
+                                </div>
+                                <p class="small mt-2 mb-0 fw-semibold">{{ admin_analytics.placement_rate_percent }}% of applications converted to placements</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-12 col-xl-6">
+                    <div class="card analytics-card h-100">
+                        <div class="card-body">
+                            <h3 class="h6 mb-3">Student & Company Health</h3>
+
+                            <p class="small text-muted mb-1">Student activity</p>
+                            <div class="segment-track mb-1" aria-label="Student activity">
+                                {% for i in range(20) %}
+                                <span class="segment-block {% if i < admin_analytics.students.active_units %}active-success{% elif i < admin_analytics.students.active_units + admin_analytics.students.deactivated_units %}active-secondary{% endif %}"></span>
+                                {% endfor %}
+                            </div>
+                            <p class="small text-muted mb-3">Active {{ admin_analytics.students.active }} | Deactivated {{ admin_analytics.students.deactivated }}</p>
+
+                            <p class="small text-muted mb-1">Company approval / pending / blacklist</p>
+                            <div class="segment-track mb-1" aria-label="Company status">
+                                {% for i in range(20) %}
+                                <span class="segment-block {% if i < admin_analytics.companies.approved_units %}active-success{% elif i < admin_analytics.companies.approved_units + admin_analytics.companies.pending_units %}active-warning{% elif i < admin_analytics.companies.approved_units + admin_analytics.companies.pending_units + admin_analytics.companies.blacklisted_units %}active-danger{% endif %}"></span>
+                                {% endfor %}
+                            </div>
+                            <p class="small text-muted mb-0">Approved {{ admin_analytics.companies.approved }} | Pending {{ admin_analytics.companies.pending }} | Blacklisted {{ admin_analytics.companies.blacklisted }}</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-12 col-xl-6">
+                    <div class="card analytics-card h-100">
+                        <div class="card-body">
+                            <h3 class="h6 mb-3">Top Courses & Hiring Companies</h3>
+
+                            <p class="small text-muted mb-2">Top student courses</p>
+                            {% for item in admin_analytics.top_course_chart %}
+                            <div class="d-flex align-items-center gap-2 mb-2">
+                                <span class="bar-row-label small text-muted">{{ item.label }}</span>
+                                <div class="segment-track flex-grow-1" aria-label="{{ item.label }}">
+                                    {% for i in range(20) %}
+                                    <span class="segment-block {% if i < item.units %}active-info{% endif %}"></span>
+                                    {% endfor %}
+                                </div>
+                                <span class="small fw-semibold">{{ item.count }}</span>
+                            </div>
+                            {% else %}
+                            <p class="small text-muted">No course data available.</p>
+                            {% endfor %}
+
+                            <hr>
+                            <p class="small text-muted mb-2">Top companies by drives posted</p>
+                            {% for item in admin_analytics.top_hiring_chart %}
+                            <div class="d-flex align-items-center gap-2 mb-2">
+                                <span class="bar-row-label small text-muted">{{ item.label }}</span>
+                                <div class="segment-track flex-grow-1" aria-label="{{ item.label }}">
+                                    {% for i in range(20) %}
+                                    <span class="segment-block {% if i < item.units %}active-primary{% endif %}"></span>
+                                    {% endfor %}
+                                </div>
+                                <span class="small fw-semibold">{{ item.count }}</span>
+                            </div>
+                            {% else %}
+                            <p class="small text-muted">No job drive data available.</p>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
 
         <section class="mb-4">
             <h2 class="h5">Students</h2>

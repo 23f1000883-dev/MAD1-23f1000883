@@ -4,43 +4,77 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Placement Portal - Login Options</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-sRIl4kxILFv47J16cr9ZwB07vP4J8+LH7qKQnuqkuIAvNWLzeN8tE5YBujZqJLB" crossorigin="anonymous">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body {
+            background: radial-gradient(circle at top right, #e8f0ff 0%, #f8f9ff 45%, #f1f3f9 100%);
+        }
+        .auth-shell {
+            border-radius: 1.75rem;
+            overflow: hidden;
+            box-shadow: 0 1.25rem 3rem rgba(20, 44, 89, 0.15);
+            border: 1px solid #e9eefb;
+        }
+        .hero-panel {
+            background: linear-gradient(145deg, #1d4ed8 0%, #2563eb 45%, #3b82f6 100%);
+            color: #fff;
+            position: relative;
+        }
+        .hero-panel::after {
+            content: "";
+            position: absolute;
+            right: -50px;
+            bottom: -50px;
+            width: 180px;
+            height: 180px;
+            background: rgba(255, 255, 255, 0.12);
+            border-radius: 50%;
+        }
+        .brand-title {
+            font-size: clamp(2rem, 5vw, 3rem);
+            font-weight: 800;
+            line-height: 1.1;
+            letter-spacing: 0.02em;
+            margin-bottom: 0.4rem;
+        }
+        .role-card {
+            border: 1px solid #e7ebf7;
+            border-radius: 1rem;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+        .role-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 0.9rem 1.8rem rgba(16, 24, 40, 0.09);
+        }
+        .icon-badge {
+            width: 3rem;
+            height: 3rem;
+            border-radius: 0.9rem;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+        }
+    </style>
 </head>
 
-<body class="bg-body-tertiary">
+<body>
     <main class="container py-5 min-vh-100 d-flex align-items-center">
         <div class="row justify-content-center w-100">
             <div class="col-12 col-xl-11">
-                <div class="card border-0 shadow-lg overflow-hidden rounded-5">
+                <div class="card auth-shell border-0 bg-white">
                     <div class="row g-0 align-items-stretch">
-                        <div class="col-lg-5 text-white p-4 p-lg-5 d-flex flex-column justify-content-between bg-primary bg-gradient">
+                        <div class="col-lg-5 hero-panel p-4 p-lg-5 d-flex flex-column justify-content-between">
                             <div>
-                                <span class="badge text-bg-light text-primary rounded-pill mb-3 px-3 py-2">Placement Portal</span>
-                                <h1 class="display-6 fw-semibold mb-3">Welcome back</h1>
-                                <p class="lead mb-4 text-white-50">
-                                    Pick the right login page for your account and sign in quickly.
+                                <p class="brand-title">Placement Portal</p>
+                                <h1 class="h2 fw-semibold mb-3">Welcome back 👋</h1>
+                                <p class="mb-0 text-white-50 fs-5">
+                                    Choose your role and continue to your dashboard in one click.
                                 </p>
-
-                                <div class="d-grid gap-3 mb-4">
-                                    <div class="d-flex align-items-center gap-3 p-2 rounded-4 bg-white bg-opacity-10">
-                                        <span class="badge text-bg-light text-primary rounded-circle d-inline-flex align-items-center justify-content-center" style="width: 2rem; height: 2rem;">✓</span>
-                                        <span>Simple student access</span>
-                                    </div>
-                                    <div class="d-flex align-items-center gap-3 p-2 rounded-4 bg-white bg-opacity-10">
-                                        <span class="badge text-bg-light text-primary rounded-circle d-inline-flex align-items-center justify-content-center" style="width: 2rem; height: 2rem;">✓</span>
-                                        <span>Company job management</span>
-                                    </div>
-                                    <div class="d-flex align-items-center gap-3 p-2 rounded-4 bg-white bg-opacity-10">
-                                        <span class="badge text-bg-light text-primary rounded-circle d-inline-flex align-items-center justify-content-center" style="width: 2rem; height: 2rem;">✓</span>
-                                        <span>Admin portal control</span>
-                                    </div>
-                                </div>
                             </div>
 
-                            <div class="d-flex gap-2 flex-wrap">
-                                <span class="badge text-bg-light text-primary">Student</span>
-                                <span class="badge text-bg-light text-primary">Company</span>
-                                <span class="badge text-bg-light text-primary">Admin</span>
+                            <div class="rounded-4 px-3 py-2 bg-white bg-opacity-10 text-white-50 small">
+                                Smart. Fast. Professional.
                             </div>
                         </div>
 
@@ -48,7 +82,7 @@
                             <div class="d-flex justify-content-between align-items-start flex-wrap gap-2 mb-3">
                                 <div>
                                     <h2 class="h4 mb-1">Login options</h2>
-                                    <p class="text-muted mb-0">Choose one card below to continue.</p>
+                                    <p class="text-muted mb-0">Select account type to continue.</p>
                                 </div>
                                 <a href="{{ url_for('access') }}" class="btn btn-outline-secondary btn-sm shadow-sm">Home</a>
                             </div>
@@ -65,34 +99,34 @@
 
                             <div class="row g-3">
                                 <div class="col-12 col-md-4">
-                                    <div class="card h-100 border-0 shadow-sm bg-body-tertiary rounded-4">
+                                    <div class="card role-card h-100 border-0 bg-white">
                                         <div class="card-body d-flex flex-column p-4">
-                                            <div class="rounded-4 bg-primary text-white fw-semibold d-inline-flex align-items-center justify-content-center mb-3 shadow-sm" style="width: 3rem; height: 3rem;">S</div>
+                                            <div class="icon-badge bg-primary text-white mb-3">S</div>
                                             <h3 class="h5 mb-2">Student</h3>
                                             <p class="text-muted small flex-grow-1 mb-3">Use your student email to see jobs and applications.</p>
-                                            <a href="{{ url_for('student_login_page') }}" class="btn btn-primary w-100 shadow-sm">Student Login</a>
+                                            <a href="{{ url_for('student_login_page') }}" class="btn btn-primary w-100">Student Login</a>
                                         </div>
                                     </div>
                                 </div>
 
                                 <div class="col-12 col-md-4">
-                                    <div class="card h-100 border-0 shadow-sm bg-body-tertiary rounded-4">
+                                    <div class="card role-card h-100 border-0 bg-white">
                                         <div class="card-body d-flex flex-column p-4">
-                                            <div class="rounded-4 bg-success text-white fw-semibold d-inline-flex align-items-center justify-content-center mb-3 shadow-sm" style="width: 3rem; height: 3rem;">C</div>
+                                            <div class="icon-badge bg-success text-white mb-3">C</div>
                                             <h3 class="h5 mb-2">Company</h3>
                                             <p class="text-muted small flex-grow-1 mb-3">Use your company account to post jobs and review applicants.</p>
-                                            <a href="{{ url_for('company_login_page') }}" class="btn btn-success w-100 shadow-sm">Company Login</a>
+                                            <a href="{{ url_for('company_login_page') }}" class="btn btn-success w-100">Company Login</a>
                                         </div>
                                     </div>
                                 </div>
 
                                 <div class="col-12 col-md-4">
-                                    <div class="card h-100 border-0 shadow-sm bg-body-tertiary rounded-4">
+                                    <div class="card role-card h-100 border-0 bg-white">
                                         <div class="card-body d-flex flex-column p-4">
-                                            <div class="rounded-4 bg-warning text-dark fw-semibold d-inline-flex align-items-center justify-content-center mb-3 shadow-sm" style="width: 3rem; height: 3rem;">A</div>
+                                            <div class="icon-badge bg-warning text-dark mb-3">A</div>
                                             <h3 class="h5 mb-2">Admin</h3>
                                             <p class="text-muted small flex-grow-1 mb-3">Manage students, companies, and placements.</p>
-                                            <a href="{{ url_for('admin_login_page') }}" class="btn btn-warning w-100 shadow-sm">Admin Login</a>
+                                            <a href="{{ url_for('admin_login_page') }}" class="btn btn-warning w-100">Admin Login</a>
                                         </div>
                                     </div>
                                 </div>

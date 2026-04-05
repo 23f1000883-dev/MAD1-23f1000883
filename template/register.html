@@ -4,41 +4,76 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Placement Portal - Registration Options</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-sRIl4kxILFv47J16cr9ZwB07vP4J8+LH7qKQnuqkuIAvNWLzeN8tE5YBujZqJLB" crossorigin="anonymous">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body {
+            background: radial-gradient(circle at top left, #eafaf2 0%, #f6fffb 40%, #eef4f7 100%);
+        }
+        .auth-shell {
+            border-radius: 1.75rem;
+            overflow: hidden;
+            box-shadow: 0 1.25rem 3rem rgba(7, 64, 42, 0.15);
+            border: 1px solid #ddf2e8;
+        }
+        .hero-panel {
+            background: linear-gradient(145deg, #047857 0%, #059669 45%, #10b981 100%);
+            color: #fff;
+            position: relative;
+        }
+        .hero-panel::after {
+            content: "";
+            position: absolute;
+            left: -50px;
+            bottom: -60px;
+            width: 190px;
+            height: 190px;
+            background: rgba(255, 255, 255, 0.12);
+            border-radius: 50%;
+        }
+        .brand-title {
+            font-size: clamp(2rem, 5vw, 3rem);
+            font-weight: 800;
+            line-height: 1.1;
+            letter-spacing: 0.02em;
+            margin-bottom: 0.4rem;
+        }
+        .option-card {
+            border: 1px solid #e4ece8;
+            border-radius: 1rem;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+        .option-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 0.9rem 1.8rem rgba(16, 24, 40, 0.09);
+        }
+        .icon-badge {
+            width: 3rem;
+            height: 3rem;
+            border-radius: 0.9rem;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+        }
+    </style>
 </head>
-<body class="bg-body-tertiary">
+<body>
     <main class="container py-5 min-vh-100 d-flex align-items-center">
         <div class="row justify-content-center w-100">
             <div class="col-12 col-xl-11">
-                <div class="card border-0 shadow-lg overflow-hidden rounded-5">
+                <div class="card auth-shell border-0 bg-white">
                     <div class="row g-0 align-items-stretch">
-                        <div class="col-lg-5 text-white p-4 p-lg-5 d-flex flex-column justify-content-between bg-success bg-gradient">
+                        <div class="col-lg-5 hero-panel p-4 p-lg-5 d-flex flex-column justify-content-between">
                             <div>
-                                <span class="badge text-bg-light text-success rounded-pill mb-3 px-3 py-2">Placement Portal</span>
-                                <h1 class="display-6 fw-semibold mb-3">Start your journey</h1>
-                                <p class="lead mb-4 text-white-50">
-                                    Pick the account type that matches you and create your profile in minutes.
+                                <p class="brand-title">Placement Portal</p>
+                                <h1 class="h2 fw-semibold mb-3">Create your account ✨</h1>
+                                <p class="mb-0 text-white-50 fs-5">
+                                    Register as student or company and start using the portal right away.
                                 </p>
-
-                                <div class="d-grid gap-3 mb-4">
-                                    <div class="d-flex align-items-center gap-3 p-2 rounded-4 bg-white bg-opacity-10">
-                                        <span class="badge text-bg-light text-success rounded-circle d-inline-flex align-items-center justify-content-center" style="width: 2rem; height: 2rem;">✓</span>
-                                        <span>Quick student signup</span>
-                                    </div>
-                                    <div class="d-flex align-items-center gap-3 p-2 rounded-4 bg-white bg-opacity-10">
-                                        <span class="badge text-bg-light text-success rounded-circle d-inline-flex align-items-center justify-content-center" style="width: 2rem; height: 2rem;">✓</span>
-                                        <span>Company profile onboarding</span>
-                                    </div>
-                                    <div class="d-flex align-items-center gap-3 p-2 rounded-4 bg-white bg-opacity-10">
-                                        <span class="badge text-bg-light text-success rounded-circle d-inline-flex align-items-center justify-content-center" style="width: 2rem; height: 2rem;">✓</span>
-                                        <span>Secure portal access</span>
-                                    </div>
-                                </div>
                             </div>
 
-                            <div class="d-flex gap-2 flex-wrap">
-                                <span class="badge text-bg-light text-success">Student</span>
-                                <span class="badge text-bg-light text-success">Company</span>
+                            <div class="rounded-4 px-3 py-2 bg-white bg-opacity-10 text-white-50 small">
+                                Clean. Fast. Career-ready.
                             </div>
                         </div>
 
@@ -63,23 +98,23 @@
 
                             <div class="row g-3">
                                 <div class="col-12 col-md-6">
-                                    <div class="card h-100 border-0 shadow-sm bg-body-tertiary rounded-4">
+                                    <div class="card option-card h-100 border-0 bg-white">
                                         <div class="card-body d-flex flex-column p-4">
-                                            <div class="rounded-4 bg-success text-white fw-semibold d-inline-flex align-items-center justify-content-center mb-3 shadow-sm" style="width: 3rem; height: 3rem;">S</div>
+                                            <div class="icon-badge bg-success text-white mb-3">S</div>
                                             <h3 class="h5 mb-2">Student</h3>
                                             <p class="text-muted small flex-grow-1 mb-3">Register and set up your profile, skills, and resume.</p>
-                                            <a href="{{ url_for('student_register_page') }}" class="btn btn-success w-100 shadow-sm">Student Registration</a>
+                                            <a href="{{ url_for('student_register_page') }}" class="btn btn-success w-100">Student Registration</a>
                                         </div>
                                     </div>
                                 </div>
 
                                 <div class="col-12 col-md-6">
-                                    <div class="card h-100 border-0 shadow-sm bg-body-tertiary rounded-4">
+                                    <div class="card option-card h-100 border-0 bg-white">
                                         <div class="card-body d-flex flex-column p-4">
-                                            <div class="rounded-4 bg-primary text-white fw-semibold d-inline-flex align-items-center justify-content-center mb-3 shadow-sm" style="width: 3rem; height: 3rem;">C</div>
+                                            <div class="icon-badge bg-primary text-white mb-3">C</div>
                                             <h3 class="h5 mb-2">Company</h3>
                                             <p class="text-muted small flex-grow-1 mb-3">Register to publish jobs and manage applicant pipelines.</p>
-                                            <a href="{{ url_for('company_register_page') }}" class="btn btn-primary w-100 shadow-sm">Company Registration</a>
+                                            <a href="{{ url_for('company_register_page') }}" class="btn btn-primary w-100">Company Registration</a>
                                         </div>
                                     </div>
                                 </div>
