@@ -241,11 +241,15 @@
 
                 <nav class="navbar navbar-expand-lg bg-white border rounded px-3 mb-4">
                     <span class="navbar-brand mb-0 h1">Admin Portal</span>
+                    {% if active_page != 'overview' %}
                     <form class="d-flex ms-auto me-2" method="GET" action="">
                         <input class="form-control form-control-sm me-2" type="search" name="search" value="{{ search or '' }}" placeholder="Search student/company">
                         <button class="btn btn-primary btn-sm" type="submit">Search</button>
                     </form>
                     <a href="{{ request.path }}" class="btn btn-outline-secondary btn-sm me-2">Clear</a>
+                    {% else %}
+                    <div class="ms-auto"></div>
+                    {% endif %}
                     <a href="{{ url_for('logout') }}" class="btn btn-outline-danger btn-sm">Logout</a>
                 </nav>
 

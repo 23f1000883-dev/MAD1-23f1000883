@@ -27,8 +27,8 @@
         .table-responsive .table td {
             padding: 0.65rem 0.75rem;
             white-space: normal;
-            word-break: break-word;
-            overflow-wrap: anywhere;
+            word-break: normal;
+            overflow-wrap: break-word;
             line-height: 1.35;
             vertical-align: middle;
         }
@@ -63,6 +63,11 @@
         .table-responsive .table td:nth-child(2) {
             min-width: 160px;
         }
+        .table-responsive .table th:nth-child(3),
+        .table-responsive .table td:nth-child(3) {
+            min-width: 120px;
+            white-space: nowrap;
+        }
         .table-responsive .table th:nth-child(4),
         .table-responsive .table td:nth-child(4) {
             min-width: 200px;
@@ -79,6 +84,17 @@
         .table-sticky-cols td {
             position: static;
             left: auto;
+        }
+        .student-details-card .card-body {
+            padding: 1rem 1.1rem;
+        }
+        .student-details-card h2 {
+            margin-bottom: 0.85rem !important;
+            font-size: 1.35rem;
+        }
+        .student-details-card p {
+            font-size: 0.95rem;
+            margin-bottom: 0.55rem !important;
         }
     </style>
 </head>
@@ -112,8 +128,8 @@
         {% endwith %}
 
         <div class="row g-4">
-            <div class="col-12 col-lg-4">
-                <div class="card shadow-sm h-100">
+            <div class="col-12 col-lg-3">
+                <div class="card shadow-sm h-100 student-details-card">
                     <div class="card-body">
                         <h2 class="h5 mb-3">My Details</h2>
                         <p class="mb-2"><strong>Name:</strong> {{ student.full_name }}</p>
@@ -133,7 +149,7 @@
                 </div>
             </div>
 
-            <div class="col-12 col-lg-8">
+            <div class="col-12 col-lg-9">
                 <div class="card shadow-sm h-100">
                     <div class="card-body">
                         <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">

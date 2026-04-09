@@ -4,15 +4,57 @@ from werkzeug.security import check_password_hash as cph, generate_password_hash
 from werkzeug.utils import secure_filename
 from sqlalchemy import text
 from sqlalchemy.exc import OperationalError
-from datetime import datetime
+from datetime import datetime, UTC
 from collections import Counter
 import os
 from uuid import uuid4
 
+
+def load_env_file(env_path):
+    if not os.path.exists(env_path):
+        return
+
+    try:
+        with open(env_path, "r", encoding="utf-8") as env_file:
+            for raw_line in env_file:
+                line = raw_line.strip()
+                if not line or line.startswith("#") or "=" not in line:
+                    continue
+                key, value = line.split("=", 1)
+                key = key.strip()
+                value = value.strip().strip('"').strip("'")
+                if key and key not in os.environ:
+                    os.environ[key] = value
+    except OSError as error:
+        print(f"Warning: could not load .env file: {error}")
+
+
+def env_bool(name, default=False):
+    value = (os.environ.get(name) or "").strip().lower()
+    if not value:
+        return default
+    return value in {"1", "true", "yes", "on"}
+
+
+PROJECT_ROOT = os.path.dirname(os.path.abspath(__file__))
+load_env_file(os.path.join(PROJECT_ROOT, ".env"))
+
 app = Flask(__name__, template_folder="template")
-app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///placement_portal.db"
+os.makedirs(app.instance_path, exist_ok=True)
+
+default_database_uri = "sqlite:///placement_portal.db"
+
+configured_database_uri = (os.environ.get("DATABASE_URL") or "").strip()
+app.config["SQLALCHEMY_DATABASE_URI"] = configured_database_uri or default_database_uri
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
-app.secret_key = "Project"  
+
+app.secret_key = os.environ.get("FLASK_SECRET_KEY") or os.urandom(32).hex()
+app.config["SESSION_COOKIE_HTTPONLY"] = True
+app.config["SESSION_COOKIE_SAMESITE"] = os.environ.get("SESSION_COOKIE_SAMESITE", "Lax")
+app.config["SESSION_COOKIE_SECURE"] = env_bool("SESSION_COOKIE_SECURE", default=False)
+
+if not os.environ.get("FLASK_SECRET_KEY"):
+    print("Warning: FLASK_SECRET_KEY is not set. Using temporary runtime key.")
 
 RESUME_UPLOAD_FOLDER = os.path.join(app.root_path, "static", "uploads", "resumes")
 ALLOWED_RESUME_EXTENSIONS = {"pdf", "doc", "docx"}
@@ -171,7 +213,7 @@ def ensure_jobposition_columns():
 
 
 def close_expired_job_positions():
-    today = datetime.utcnow().date()
+    today = datetime.now(UTC).date()
     expired_positions = JobPosition.query.filter(
         JobPosition.is_active == True,
         JobPosition.application_deadline.isnot(None),
@@ -184,13 +226,44 @@ def close_expired_job_positions():
         db.session.commit()
 
 
+def ensure_student_placement_history(student_id):
+    placed_applications = Application.query.filter_by(student_id=student_id).filter(
+        Application.status == "placed"
+    ).all()
+
+    created_count = 0
+    for application in placed_applications:
+        existing_placement = Placement.query.filter_by(application_id=application.id).first()
+        if not existing_placement:
+            placement = Placement()
+            placement.application_id = application.id
+            db.session.add(placement)
+            created_count += 1
+
+    if created_count > 0:
+        db.session.commit()
+
+
 def ensure_default_admin():
-    existing_admin = Admin.query.filter_by(username="admin").first()
+    admin_username = (os.environ.get("DEFAULT_ADMIN_USERNAME") or "").strip()
+    admin_email = (os.environ.get("DEFAULT_ADMIN_EMAIL") or "").strip().lower()
+    admin_password = os.environ.get("DEFAULT_ADMIN_PASSWORD") or ""
+
+    if not (admin_username and admin_email and admin_password):
+        existing_admin = Admin.query.first()
+        if not existing_admin:
+            print(
+                "Warning: No admin found and default admin env vars are missing. "
+                "Set DEFAULT_ADMIN_USERNAME, DEFAULT_ADMIN_EMAIL, DEFAULT_ADMIN_PASSWORD in .env"
+            )
+        return
+
+    existing_admin = Admin.query.filter_by(username=admin_username).first()
     if not existing_admin:
         admin = Admin()
-        admin.username = "admin"
-        admin.email = "admin@placement.local"
-        admin.password = gph("admin123")
+        admin.username = admin_username
+        admin.email = admin_email
+        admin.password = gph(admin_password)
         db.session.add(admin)
         db.session.commit()
 
@@ -284,6 +357,8 @@ def render_admin_portal_page(template_name, active_page="overview"):
     close_expired_job_positions()
 
     search = (request.args.get("search") or "").strip().lower()
+    if active_page == "overview":
+        search = ""
 
     def safe_all(query_builder):
         try:
@@ -482,7 +557,7 @@ def render_admin_portal_page(template_name, active_page="overview"):
     for item in top_hiring_chart:
         item["units"] = units_from_percent(item["percent"], 20)
 
-    today = datetime.utcnow().date()
+    today = datetime.now(UTC).date()
     current_month_index = today.year * 12 + today.month
     monthly_trend = []
 
@@ -709,6 +784,7 @@ def admin_edit_student(student_id):
     student.course = course
     student.skills = skills
     student.graduation_year = graduation_year
+    db.session.add(student)
     db.session.commit()
     flash("Student details updated.", "success")
     return redirect_back_to_admin()
@@ -722,6 +798,7 @@ def deactivate_student(student_id):
     student = Student.query.get(student_id)
     if student:
         student.is_deactivated = True
+        db.session.add(student)
         db.session.commit()
         flash("Student deactivated.", "warning")
 
@@ -736,6 +813,7 @@ def activate_student(student_id):
     student = Student.query.get(student_id)
     if student:
         student.is_deactivated = False
+        db.session.add(student)
         db.session.commit()
         flash("Student activated.", "success")
 
@@ -780,6 +858,7 @@ def admin_edit_company(company_id):
     company.industry = industry
     company.location = location
     company.website = website
+    db.session.add(company)
     db.session.commit()
     flash("Company details updated.", "success")
     return redirect_back_to_admin()
@@ -793,6 +872,7 @@ def blacklist_company(company_id):
     company = Company.query.get(company_id)
     if company:
         company.is_blacklisted = True
+        db.session.add(company)
         db.session.commit()
         flash("Company blacklisted.", "warning")
 
@@ -807,6 +887,7 @@ def allow_company(company_id):
     company = Company.query.get(company_id)
     if company:
         company.is_blacklisted = False
+        db.session.add(company)
         db.session.commit()
         flash("Company allowed again.", "success")
 
@@ -821,6 +902,7 @@ def approve_company(company_id):
     company = Company.query.get(company_id)
     if company:
         company.is_approved = True
+        db.session.add(company)
         db.session.commit()
         flash("Company approved.", "success")
 
@@ -835,6 +917,7 @@ def reject_company(company_id):
     company = Company.query.get(company_id)
     if company:
         company.is_approved = False
+        db.session.add(company)
         db.session.commit()
         flash("Company set to not approved.", "warning")
 
@@ -850,6 +933,7 @@ def approve_job(job_id):
     if job:
         job.status = "approved"
         job.is_active = True
+        db.session.add(job)
         db.session.commit()
         flash("Placement drive approved.", "success")
 
@@ -865,6 +949,7 @@ def reject_job(job_id):
     if job:
         job.status = "rejected"
         job.is_active = False
+        db.session.add(job)
         db.session.commit()
         flash("Placement drive rejected.", "warning")
 
@@ -880,6 +965,7 @@ def close_job(job_id):
     if job:
         job.status = "closed"
         job.is_active = False
+        db.session.add(job)
         db.session.commit()
         flash("Placement drive closed.", "info")
 
@@ -1161,6 +1247,16 @@ def update_application_status(application_id):
 
     if application:
         application.status = new_status
+        db.session.add(application)
+
+        existing_placement = Placement.query.filter_by(application_id=application.id).first()
+        if new_status == "placed" and not existing_placement:
+            placement = Placement()
+            placement.application_id = application.id
+            db.session.add(placement)
+        elif new_status != "placed" and existing_placement:
+            db.session.delete(existing_placement)
+
         db.session.commit()
         flash("Application status updated.", "success")
 
@@ -1279,6 +1375,8 @@ def student_dashboard():
     student = Student.query.get(session['student_id'])
     if not student:
         return redirect(url_for("access"))
+
+    ensure_student_placement_history(student.id)
 
     search = (request.args.get("search") or "").strip().lower()
     applications = Application.query.filter_by(student_id=student.id).all()
@@ -1513,6 +1611,7 @@ def edit_profile():
         student.graduation_year = graduation_year
         
         try:
+            db.session.add(student)
             db.session.commit()
             session['student_name'] = student.full_name
             session['student_email'] = student.email
@@ -1610,6 +1709,7 @@ def edit_company_profile():
             company.industry = industry
             company.location = location
             company.website = website
+            db.session.add(company)
             db.session.commit()
             
             print(f"Company profile updated: {company.name}")
@@ -1663,6 +1763,7 @@ def admin_create_placement():
     
     try:
         application.status = "placed"
+        db.session.add(application)
         placement = Placement()
         placement.application_id = application_id
         placement.offered_package_lpa = offered_package_lpa
@@ -1729,6 +1830,7 @@ def admin_remove_placement(placement_id):
         application = placement.application
         if application:
             application.status = "selected"
+            db.session.add(application)
         
         # Delete placement
         db.session.delete(placement)
